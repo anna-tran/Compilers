@@ -7,36 +7,36 @@ import Data.Char
 
 %wrapper "posn"
 
-$digit = 0-9
+$digit = [0-9]
 $alpha = [a-zA-Z]
-$special = [\+\-\:\=\*\/\(\)\;\%]   -- other tokens
+$special = [\+\-\*\/\(\)\;\%]   -- other tokens
 
 
 tokens :-
-  $white+                   ; 
-  "%" .*                    ;
-  "/*"                      {\p s -> LCOMMENT}
-  "*/"                      {\p s -> RCOMMENT}
-  "if"                      {\p s -> IF p}
-  "then"                    {\p s -> THEN p}
-  "while"                   {\p s -> WHILE p}
-  "do"                      {\p s -> DO p}
-  "input"                   {\p s -> INPUT p} 
-  "else"                    {\p s -> ELSE p}
-  "begin"                   {\p s -> BEGIN p}
-  "end"                     {\p s -> END p}
-  "write"                   {\p s -> WRITE p}
-  $alpha[$digit $alpha]*    {\p s -> ID p s}
-  $digit+                   {\p s -> NUM p (read s)}
-  \+                        {\p s -> ADD p}
-  \:=                       {\p s -> ASSIGN p}
-  \-                        {\p s -> SUB p}
-  \*                        {\p s -> MUL p}
-  \/                        {\p s -> DIV p}
-  \(                        {\p s -> LPAR p}
-  \)                        {\p s -> RPAR p}
-  \;                        {\p s -> SEMICOLON p}  
-  $special+                 {\p s -> ERROR p s}
+  $white+                       ; 
+  "%".*                         ;
+  "/*"                          {\p s -> LCOMMENT p}
+  "*/"                          {\p s -> RCOMMENT p}
+  "if"                          {\p s -> IF p}
+  "then"                        {\p s -> THEN p}
+  "while"                       {\p s -> WHILE p}
+  "do"                          {\p s -> DO p}
+  "input"                       {\p s -> INPUT p} 
+  "else"                        {\p s -> ELSE p}
+  "begin"                       {\p s -> BEGIN p}
+  "end"                         {\p s -> END p}
+  "write"                       {\p s -> WRITE p}
+  $alpha[$digit $alpha]*        {\p s -> ID p s}
+  $digit+                       {\p s -> NUM p s}
+  \+                            {\p s -> ADD p}
+  \:=                           {\p s -> ASSIGN p}
+  \-                            {\p s -> SUB p}
+  \*                            {\p s -> MUL p}
+  \/                            {\p s -> DIV p}
+  \(                            {\p s -> LPAR p}
+  \)                            {\p s -> RPAR p}
+  \;                            {\p s -> SEMICOLON p}  
+  .                             {\p s -> ERROR p s}
 
   
 {
@@ -45,14 +45,14 @@ tokens :-
 --TODO function that deals with comments
 comment :: [Token] -> Int -> [Token]
 comment [] 0 = []
-comment [] n
-  | n > 0     = [ERROR (AlexPn 0 0 0) "Missing closing comment"]
-  | n < 0     = [ERROR (AlexPn 0 0 0) "Missing opening comment"]
+comment [RCOMMENT p] n  = [ERROR p "Missing closing comment"]
+  where n > 1
 comment (x:xs) n
-  | x == LCOMMENT   = comment xs (n+1)
-  | x == RCOMMENT   = comment xs (n-1)
-  | n < 0 || n > 0          = comment xs n
-  | n == 0          = x:(comment xs n)
+  | x == LCOMMENT p      = comment xs (n+1)
+  | x == RCOMMENT p      = comment xs (n-1)
+  | n > 0               = comment xs n
+  | n < 0               = 
+  | n == 0              = x:(comment xs n)
 
   
 data Token
@@ -75,19 +75,21 @@ data Token
   | LPAR AlexPosn
   | RPAR AlexPosn
   | SEMICOLON AlexPosn
-  | LCOMMENT
-  | RCOMMENT
+  | LCOMMENT AlexPosn
+  | RCOMMENT AlexPosn
   | ERROR AlexPosn String
   deriving (Eq, Show)
 
 
 lexer :: String -> IO [Token]
 lexer file = do
-  s <- readFile file
-  --comment deals with the comment and error checking
+  s <- getContents
+  -- s <- readFile file
+  -- comment deals with the comment and error checking
   return (comment (alexScanTokens s) 0)
 
 main = do
-    s <- getContents
-    print ("comment (alexScanTokens s) 0")
+   -- s <- getContents
+   toks <- lexer "t1.txt"
+   print toks
 }

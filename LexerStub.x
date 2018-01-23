@@ -3,14 +3,14 @@ module Lexer where
 
 import Data.List
 import Data.Char
+import System.Environment   
+
 }
 
 %wrapper "posn"
 
 $digit = [0-9]
 $alpha = [a-zA-Z]
-$special = [\+\-\*\/\(\)\;\%]   -- other tokens
-
 
 tokens :-
   $white+                       ; 
@@ -36,25 +36,23 @@ tokens :-
   \(                            {\p s -> LPAR p}
   \)                            {\p s -> RPAR p}
   \;                            {\p s -> SEMICOLON p}  
-  .                             {\p s -> ERROR p s}
+  .                             {\p s -> ERROR p ("Unkown symbol "++s)}
 
   
 {
 
 
---TODO function that deals with comments
 comment :: [Token] -> Int -> [Token]
 comment [] 0 = []
-comment [RCOMMENT p] n  = [ERROR p "Missing closing comment"]
-  where n > 1
-comment (x:xs) n
-  | x == LCOMMENT p      = comment xs (n+1)
-  | x == RCOMMENT p      = comment xs (n-1)
-  | n > 0               = comment xs n
-  | n < 0               = 
-  | n == 0              = x:(comment xs n)
+comment (LCOMMENT p:ts) n = comment ts (n+1)
+comment (RCOMMENT p:ts) n 
+  | n <= 0                = [ERROR p "Missing opening comment"]
+  | otherwise             = comment ts (n-1)
+comment [t] n | n > 0     = [ERROR (position t) "Missing closing comment"] 
+comment (t:ts) n
+  | n > 0                 = comment ts n
+  | n == 0                = t:(comment ts n)
 
-  
 data Token
   = IF AlexPosn
   | THEN AlexPosn
@@ -65,8 +63,6 @@ data Token
   | BEGIN AlexPosn
   | END AlexPosn
   | WRITE AlexPosn
-  | ID AlexPosn String
-  | NUM AlexPosn String
   | ADD AlexPosn
   | ASSIGN AlexPosn
   | SUB AlexPosn
@@ -77,19 +73,44 @@ data Token
   | SEMICOLON AlexPosn
   | LCOMMENT AlexPosn
   | RCOMMENT AlexPosn
+  | ID AlexPosn String
+  | NUM AlexPosn String
   | ERROR AlexPosn String
   deriving (Eq, Show)
+
+position :: Token -> AlexPosn
+position (IF p) = p
+position (THEN p) = p
+position (WHILE p) = p
+position (DO p) = p
+position (INPUT p) = p
+position (ELSE p) = p
+position (BEGIN p) = p
+position (END p) = p
+position (WRITE p) = p
+position (ASSIGN p) = p
+position (SUB p) = p
+position (MUL p) = p
+position (DIV p) = p
+position (LPAR p) = p
+position (RPAR p) = p
+position (SEMICOLON p) = p
+position (LCOMMENT p) = p
+position (RCOMMENT p) = p
+position (ID p _) = p
+position (NUM p _) = p
+position (ERROR p _) = p
 
 
 lexer :: String -> IO [Token]
 lexer file = do
-  s <- getContents
-  -- s <- readFile file
+  s <- readFile file
   -- comment deals with the comment and error checking
   return (comment (alexScanTokens s) 0)
 
 main = do
-   -- s <- getContents
-   toks <- lexer "t1.txt"
+   args <- getArgs
+   let file = args !! 0
+   toks <- lexer file
    print toks
 }

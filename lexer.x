@@ -36,7 +36,7 @@ tokens :-
   \(                            {\p s -> LPAR p}
   \)                            {\p s -> RPAR p}
   \;                            {\p s -> SEMICOLON p}  
-  .                             {\p s -> ERROR p ("Unkown symbol "++s)}
+  .                             {\p s -> ERROR p ("Unkown symbol " ++ s ++ " at")}
 
   
 {
@@ -45,12 +45,12 @@ tokens :-
 comment :: [Token] -> Int -> [Token]
 comment [] 0 = []
 comment (LCOMMENT p:ts) n 
-  | ts == []              = [ERROR p "Missing closing comment"] 
+  | ts == []              = [ERROR p "Missing closing comment at"] 
   | otherwise             = comment ts (n+1)
 comment (RCOMMENT p:ts) n 
-  | n <= 0                = [ERROR p "Missing opening comment"]
+  | n <= 0                = [ERROR p "Missing opening comment at"]
   | otherwise             = comment ts (n-1)
-comment [t] n | n > 0     = [ERROR (position t) "Missing closing comment"] 
+comment [t] n | n > 0     = [ERROR (position t) "Missing closing comment at"] 
 comment (t:ts) n
   | n > 0                 = comment ts n
   | n == 0                = t:(comment ts n)
@@ -78,7 +78,29 @@ data Token
   | ID AlexPosn String
   | NUM AlexPosn String
   | ERROR AlexPosn String
-  deriving (Eq, Show)
+  deriving (Eq)
+
+instance Show Token where
+  show (IF p) = "IF"
+  show (THEN p) = "THEN"
+  show (WHILE p) = "WHILE"
+  show (DO p) = "DO"
+  show (INPUT p) = "INPUT"
+  show (ELSE p) = "ELSE"
+  show (BEGIN p) = "BEGIN"
+  show (END p) = "END"
+  show (WRITE p) = "WRITE"
+  show (ASSIGN p) = "ASSIGN"
+  show (ADD p) = "ADD"
+  show (SUB p) = "SUB"
+  show (MUL p) = "MUL"
+  show (DIV p) = "DIV"
+  show (LPAR p) = "LPAR"
+  show (RPAR p) = "RPAR"
+  show (SEMICOLON p) = "SEMICOLON"
+  show (ID p s) = "ID " ++ show s
+  show (NUM p s) = "NUM " ++ show s
+  show (ERROR p s) = "ERROR " ++ show s ++ " " ++ show p
 
 position :: Token -> AlexPosn
 position (IF p) = p
@@ -91,6 +113,7 @@ position (BEGIN p) = p
 position (END p) = p
 position (WRITE p) = p
 position (ASSIGN p) = p
+position (ADD p) = p
 position (SUB p) = p
 position (MUL p) = p
 position (DIV p) = p

@@ -1,10 +1,10 @@
-# Compilers
+# Lexer
 
-This file is a lexical analyzer which produces a list of tokens parsed
+This file is a lexical analyzer, written in Haskell, which produces a list of tokens parsed
 using the following grammar. Each token is associated with an AlexPosn, and
-potentially with a value. If there is a an error with the syntax, then the
-analyzer will just report a token list of one error, with the AlexPosn of where
-that error occurs and an error message.
+potentially with a value. In a valid list of tokens, only the token name and
+potentially its value, are given. If there is a an error with the syntax, then the
+analyzer will just report a token list of one error, with an error message and the AlexPosn of where that error occurs.
 
 ## Tokens
 

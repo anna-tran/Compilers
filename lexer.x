@@ -3,8 +3,8 @@ module Lexer where
 
 import Data.List
 import Data.Char
-import System.Environment   
-
+import Data.Maybe
+import System.Environment
 }
 
 %wrapper "posn"
@@ -44,7 +44,9 @@ tokens :-
 
 comment :: [Token] -> Int -> [Token]
 comment [] 0 = []
-comment (LCOMMENT p:ts) n = comment ts (n+1)
+comment (LCOMMENT p:ts) n 
+  | ts == []              = [ERROR p "Missing closing comment"] 
+  | otherwise             = comment ts (n+1)
 comment (RCOMMENT p:ts) n 
   | n <= 0                = [ERROR p "Missing opening comment"]
   | otherwise             = comment ts (n-1)
@@ -101,16 +103,24 @@ position (ID p _) = p
 position (NUM p _) = p
 position (ERROR p _) = p
 
+getError :: [Token] -> Maybe [Token]
+getError [] = Nothing
+getError (err@(ERROR p s):xs) = Just [err]
+getError (x:xs) = getError xs
 
 lexer :: String -> IO [Token]
 lexer file = do
   s <- readFile file
-  -- comment deals with the comment and error checking
-  return (comment (alexScanTokens s) 0)
+  toks <- return (comment(alexScanTokens s) 0)
+  maybeError <- return (getError toks)
+  if (isNothing maybeError)
+    then return toks
+    else return (fromJust maybeError)
+  
 
 main = do
-   args <- getArgs
-   let file = args !! 0
-   toks <- lexer file
-   print toks
+  args <- getArgs
+  let file = args !! 0
+  toks <- (lexer file)
+  print toks
 }

@@ -1,13 +1,13 @@
 {-# OPTIONS_GHC -fno-warn-unused-binds -fno-warn-missing-signatures #-}
 {-# LANGUAGE CPP #-}
-{-# LINE 1 "LexerStub.x" #-}
+{-# LINE 1 "lexer.x" #-}
 
 module Lexer where
 
 import Data.List
 import Data.Char
-import System.Environment   
-
+import Data.Maybe
+import System.Environment
 
 #if __GLASGOW_HASKELL__ >= 603
 #include "ghcconfig.h"
@@ -9054,13 +9054,15 @@ alex_actions = array (0 :: Int, 46)
   , (0,alex_action_23)
   ]
 
-{-# LINE 42 "LexerStub.x" #-}
+{-# LINE 42 "lexer.x" #-}
 
 
 
 comment :: [Token] -> Int -> [Token]
 comment [] 0 = []
-comment (LCOMMENT p:ts) n = comment ts (n+1)
+comment (LCOMMENT p:ts) n 
+  | ts == []              = [ERROR p "Missing closing comment"] 
+  | otherwise             = comment ts (n+1)
 comment (RCOMMENT p:ts) n 
   | n <= 0                = [ERROR p "Missing opening comment"]
   | otherwise             = comment ts (n-1)
@@ -9117,18 +9119,26 @@ position (ID p _) = p
 position (NUM p _) = p
 position (ERROR p _) = p
 
+getError :: [Token] -> Maybe [Token]
+getError [] = Nothing
+getError (err@(ERROR p s):xs) = Just [err]
+getError (x:xs) = getError xs
 
 lexer :: String -> IO [Token]
 lexer file = do
   s <- readFile file
-  -- comment deals with the comment and error checking
-  return (comment (alexScanTokens s) 0)
+  toks <- return (comment(alexScanTokens s) 0)
+  maybeError <- return (getError toks)
+  if (isNothing maybeError)
+    then return toks
+    else return (fromJust maybeError)
+  
 
 main = do
-   args <- getArgs
-   let file = args !! 0
-   toks <- lexer file
-   print toks
+  args <- getArgs
+  let file = args !! 0
+  toks <- (lexer file)
+  print toks
 
 alex_action_2 = \p s -> LCOMMENT p
 alex_action_3 = \p s -> RCOMMENT p

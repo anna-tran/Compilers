@@ -41,14 +41,13 @@ tokens :-
   
 {
 
-
 comment :: [Token] -> Int -> [Token]
 comment [] 0 = []
 comment (LCOMMENT p:ts) n 
   | ts == []              = [ERROR p "Missing closing comment at"] 
   | otherwise             = comment ts (n+1)
 comment (RCOMMENT p:ts) n 
-  | n <= 0                = [ERROR p "Missing opening comment at"]
+  | n <= 0                = [ERROR p "Unbalanced closing comment at"]
   | otherwise             = comment ts (n-1)
 comment [t] n | n > 0     = [ERROR (position t) "Missing closing comment at"] 
 comment (t:ts) n

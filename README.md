@@ -39,6 +39,6 @@ To compile and use the program:
   2. Run
       ghc -main-is Lexer -o lexer
   3. Run
-      ./lexer <input file>
-      where <input file> is the file with the contents you want to test
+      ./lexer \<input file\>
+      where \<input file\> is the file with the contents you want to test
 

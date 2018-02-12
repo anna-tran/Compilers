@@ -4,7 +4,9 @@ module Lexer where
 import Data.List
 import Data.Char
 import Data.Maybe
+import Data.Either
 import System.Environment
+import System.IO
 }
 
 %wrapper "posn"
@@ -282,11 +284,13 @@ rparpart ((RPAR _):rest) = rest
 
 
 instance Show Stmt where
-    show s = (show str) where
+    show s = str 
+        where
         (str,counter) = stackStmt 0 s
 
 instance Show Exp where
-    show e = (show str) where
+    show e = str 
+        where
         (str) = stackExpr e       
 
 instance Show Token where
@@ -340,21 +344,36 @@ getError [] = Nothing
 getError (err@(ERROR p s):xs) = Just [err]
 getError (x:xs) = getError xs
 
+fromEither :: Either String Stmt -> String
+fromEither (Left s) = s
+fromEither (Right s) = (show s)
+
 lexer :: String -> IO [Token]
 lexer file = do
-  s <- readFile file
-  toks <- return (comment(alexScanTokens s) 0)
-  maybeError <- return (getError toks)
-  if (isNothing maybeError)
-    then return toks
-    else return (fromJust maybeError)
+    s <- readFile file
+    toks <- return (comment(alexScanTokens s) 0)
+    maybeError <- return (getError toks)
+    if (isNothing maybeError)
+        then return toks
+        else return (fromJust maybeError)
+
+writeToFile :: Handle -> [String] -> IO ()
+writeToFile h [] = do
+
+writeToFile h [t:ts] = do
+    hPutStrLn h t
+    writeToFile h ts
+    
   
 
 main = do
-  args <- getArgs
-  let file = args !! 0
-  toks <- (lexer file)
-  print toks
-  let stmtls = minParser toks
-  print stmtls
+    args <- getArgs
+    let file = args !! 0
+    toks <- (lexer file)
+    let stmtls = minParser toks
+    handle <- openFile "machine_code" WriteMode
+
+    writeToFile handle $ lines (fromEither stmtls)
+    hClose handle
+   
 }

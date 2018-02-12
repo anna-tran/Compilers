@@ -1,0 +1,4 @@
+begin
+    if y then x:=3
+    else x:=0;
+end

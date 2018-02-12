@@ -1,0 +1,5 @@
+begin
+    input x;
+    write x;
+    x := x+y;
+end

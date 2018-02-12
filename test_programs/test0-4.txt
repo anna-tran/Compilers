@@ -1,0 +1,11 @@
+begin
+    input y;
+    x := 0;
+    while y do
+    begin
+        x := x+1;
+        y := y-1;
+    end
+    ;
+    write x;
+end

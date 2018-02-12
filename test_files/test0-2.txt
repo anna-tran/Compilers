@@ -1,0 +1,6 @@
+begin
+    x := 3;
+    y := x * 2;
+    if x then input y else input z;
+    while x do write y;
+end

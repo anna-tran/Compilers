@@ -1,0 +1,4 @@
+begin
+    input a;
+    write 3;
+end

@@ -1,0 +1,232 @@
+
+stackStmt :: Int -> Stmt -> (String,Int)
+stackStmt n (If e s1 s2) =  
+    ((show e) 
+        ++ "cJUMP label" ++ (show n) ++ "\n"
+        ++ code1
+        ++ "JUMP label"++(show (n+1))++"\n"
+        ++ "label"++(show n)++":\n"
+        ++ code2
+        ++ "label"++(show (n+1))++":\n"
+        , m) where
+    (code1,n') = stackStmt (n+2) s1
+    (code2,m) = stackStmt n' s2
+stackStmt n (While e s) =
+    ("label" ++ (show n) ++ ":\n"
+        ++ (show e)
+        ++ "cJUMP label" ++ (show n+1) ++ "\n"
+        ++ "JUMP label" ++ (show n+2) ++ "\n"
+        ++ "label" (show n+1) ++ ":\n"
+        ++ code
+        ++ "JUMP label" ++ (show n) ++ "\n"
+        ++ "label" ++ (show n+2)
+        , m) where
+    (code,m) = stackStmt (n+3) s
+stackStmt n (Assign s e) =
+    (code
+        ++ "LOAD " ++ s ++ "\n"
+        , m) where
+    (code,m) = stackStmt (n+1) s
+stackStmt n (Print e) =
+    ("cPush " ++ exp ++ "\n"
+        ++ "PRINT\n"
+    , m) where
+    (exp,m) stackExpr (n+1) e
+
+
+stackExpr :: Int -> Exp -> (String,Int)
+stackExpr n (Add e1 e2) = (show ((stoi exp1) + (stoi exp2)),m) where
+    (exp1,n') = stackExpr (n+1) e1
+    (exp2,m) = stackExpr (n') e2
+stackExpr n (Id s) = (s,n+1)
+stackExpr n (Num i) = ((show i),n)    
+
+
+
+######################################
+prog -> stmt. 
+stmt -> IF expr thenpart
+      | WHILE expr dopart
+      | INPUT ID                    ???
+      | ID ASSIGN expr              ???
+      | WRITE expr
+      | BEGIN stmtlist endpart      ???
+
+thenpart -> THEN stmt elsepart
+elsepart -> ELSE stmt
+dopart -> DO stmt
+endpart -> END.                     ???
+
+stmt:: [Token] -> (Stmt,[Token])
+stmt ((IF _):rest) = (If e s1 s2,rest') where
+            (e,rest1) = expr rest
+            ((s1,s2),rest') = thenpart rest1
+stmt ((WHILE _):rest) = (While e s,rest') where
+            (e,rest1) = expr rest
+            (s,rest') = dopart rest1
+stmt ((INPUT _):rest) = (Input e,rest') where
+            (e,rest') = expr rest
+stmt ((ID _ s):(ASSIGN _):rest) = (Assign s e,rest') where
+            (e,rest') = expr rest
+stmt ((WRITE _):rest) = (Print e,rest') where
+            (e,rest') = expr rest
+stmt ((BEGIN _):rest) = (Block sl,rest') where
+            (sl,rest1) = stmtlist rest
+
+thenpart :: [Token] -> ((Stmt,Stmt),[Token])
+thenpart ((THEN _):rest) = ((s1,s2),rest') where
+            (s1,rest1) = stmt rest
+            (s2,rest') = elsepart rest1
+
+elsepart :: [Token] -> (Stmt,[Token])            
+elsepart ((ELSE _):rest) = (s,rest') where
+            (s,rest') = stmt rest
+
+dopart :: [Token] -> (Stmt,[Token])            
+dopart ((DO _):rest) = (s,rest') where
+            (s,rest') = stmt rest
+
+
+
+
+stmtlist -> stmt semicolonpart                ???
+      | END.
+semicolonpart -> SEMICOLON stmtlist
+
+
+stmtlist :: [Token] -> ([Stmt],[Token])
+stmtlist ts = (sl,ts') where
+      (sl,ts') = stmtlist1 ts
+      
+stmtlist1 :: [Token] -> ([Stmt],[Token])
+stmtlist1 ((END _):rest) = ([],rest)
+stmtlist1 ts = ((s1:sl),rest') where
+            (s1,rest1) = stmt ts
+            (sl,rest') = semicolonpart rest1
+
+semicolonpart :: [Token] -> ([Stmt],[Token])
+semicolonpart ((SEMICOLON _):rest) = (sl,rest') where
+      (sl,rest') = stmtlist1 rest
+
+
+
+
+
+expr -> term expr' 
+expr' -> ADD term expr'
+      | SUB term expr'
+      |.
+
+expr :: [Token] -> (Exp,[Token])
+expr ts = (f e,ts') where
+      (e,ts1) = term ts
+      (f,ts') = expr1 ts1
+
+expr1:: [Token] -> (Exp -> Exp,[Token])    
+expr1 ((ADD _):ts) = (g,ts')  where 
+            (e', ts1) = term ts
+            (f, ts') = expr1 ts1
+            g x = f(Add x e')               --  g::  Exp -> Exp
+expr1 ((SUB _):ts) = (g,ts')  where 
+            (e', ts1) = term ts
+            (f, ts') = expr1 ts1
+            g x = f(Add x (Neg e'))               --  g::  Exp -> Exp   
+            -- NEED TO FIX THERE IS NO SUB      
+expr1 ts = (g,ts)  where
+            g x = x                         --  g::  Exp -> Exp    
+
+
+
+
+
+
+
+
+
+term -> factor term' 
+term' -> MUL factor term'
+      | DIV factor term'
+      |.
+
+term :: [Token] -> (Exp,[Token]) 
+term ts = (f e,ts') where
+            (e,ts1) = factor ts
+            (f,ts') = term1 ts1
+
+term1:: [Token] -> (Exp -> Exp,[Token])    
+term1 ((MUL _):ts) = (g,ts')  where 
+            (e', ts1) = factor ts
+            (f, ts') = term1 ts1
+            g x = f(Mul x e')               --  g::  Exp -> Exp
+term1 ((DIV _):ts) = (g,ts')  where 
+            (e', ts1) = factor ts
+            (f, ts') = term1 ts1
+            g x = f(Div x e')               --  g::  Exp -> Exp         
+term1 ts = (g,ts)  where
+            g x = x                         --  g::  Exp -> Exp          
+
+
+
+
+
+
+
+factor -> LPAR expr rparpart             
+      | ID
+      | NUM
+      | SUB NUM.
+
+rparpart -> RPAR
+
+factor :: [Token] -> (Exp,[Token])
+factor ((LPAR _):rest) = (e,rest') where
+            (e,rest1) = expr rest
+            (rest') = rparpart rest1
+factor ((ID _ s):rest) = (Id s,rest)
+factor ((NUM _ s):rest) = (Num (fromString s),rest)
+factor ((SUB _):rest) = (Neg e,rest') where
+            (e,rest') = expr rest
+
+rparpart :: [Token] -> [Token]
+rparpart ((RPAR _):rest) = rest
+
+
+
+
+
+
+
+
+######################################
+prog -> stmt. 
+stmt -> IF expr thenpart
+      | WHILE expr dopart
+      | INPUT ID
+      | ID ASSIGN expr
+      | WRITE expr
+      | BEGIN stmtlist
+
+thenpart -> THEN stmt elsepart
+elsepart -> ELSE stmt
+dopart -> DO stmt
+
+stmtlist -> stmt semicolonpart 
+      | END.
+semicolonpart -> SEMICOLON stmtlist
+
+expr -> term expr' 
+expr' -> ADD term expr'
+      | SUB term expr'
+      |.
+
+term -> factor term' 
+term' -> MUL factor term'
+      | DIV factor term'
+      |.
+
+factor -> LPAR expr rparpart
+      | ID
+      | NUM
+      | SUB NUM.
+
+rparpart -> RPAR

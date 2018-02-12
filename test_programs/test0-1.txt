@@ -1,0 +1,4 @@
+begin
+    input x;
+    write (x+1);
+end

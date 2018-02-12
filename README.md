@@ -37,7 +37,7 @@ To compile and use the program:
   1. Run
       alex lexer.x
   2. Run
-      ghc -main-is Lexer -o lexer
+      ghc -main-is Lexer -o lexer lexer.hs
   3. Run
       ./lexer \<input file\>
       where \<input file\> is the file with the contents you want to test

@@ -1,1 +1,20 @@
-"cPush 1\nLOAD x\nrPush x\ncJUMP label2\ncPush 0\nPRINT\nJUMP label3\nlabel2:\nrPush x\nPRINT\nlabel3:\n"
+READ y
+cPUSH 0
+LOAD x
+label3:
+rPUSH y
+cJUMP label4
+rPUSH x
+cPUSH 1
+OP2 + 
+LOAD x
+rPUSH y
+cPUSH 1
+cPUSH -1 
+OP2 * 
+OP2 + 
+LOAD y
+JUMP label3
+label4:
+rPUSH x
+PRINT

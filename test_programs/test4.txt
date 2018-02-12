@@ -1,6 +1,6 @@
 %  Not every program compiles ....
 begin 
-   input x
+   input x;
    /*  this is I know a silly comment but by now 
        you should have your comments right % */
        or else you may be having a problem

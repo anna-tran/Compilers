@@ -8,6 +8,8 @@ import Data.List
 import Data.Char
 import Data.Maybe
 import Data.Either
+import Data.Foldable
+
 import System.Environment
 import System.IO
 
@@ -9056,7 +9058,7 @@ alex_actions = array (0 :: Int, 46)
   , (0,alex_action_23)
   ]
 
-{-# LINE 44 "lexer.x" #-}
+{-# LINE 46 "lexer.x" #-}
 
 
 comment :: [Token] -> Int -> [Token]
@@ -9117,10 +9119,10 @@ stackStmt :: Int -> Stmt -> (String,Int)
 stackStmt n (If e s1 s2) =  
     (expr 
         ++ "cJUMP label" ++ (show n) ++ "\n"
-        ++ code2
+        ++ code1
         ++ "JUMP label"++(show (n+1))++"\n"
         ++ "label"++(show n)++":\n"
-        ++ code1
+        ++ code2
         ++ "label"++(show (n+1))++":\n"
         , m) where
     (expr) = stackExpr e
@@ -9130,13 +9132,11 @@ stackStmt n (While e s) =
     ("label" ++ (show n) ++ ":\n"
         ++ (show e)
         ++ "cJUMP label" ++ (show (n+1)) ++ "\n"
-        ++ "JUMP label" ++ (show (n+2)) ++ "\n"
-        ++ "label" ++ (show (n+1)) ++ ":\n"
         ++ code
         ++ "JUMP label" ++ (show n) ++ "\n"
-        ++ "label" ++ (show (n+2))
+        ++ "label" ++ (show (n+1)) ++ ":\n"
         , m) where
-    (code,m) = stackStmt (n+3) s
+    (code,m) = stackStmt (n+2) s
 stackStmt n (Assign s e) =
     (expr
         ++ "LOAD " ++ s ++ "\n"
@@ -9190,8 +9190,8 @@ stackExpr (Neg e) =
         ++ "OP2 * \n"
     ) where
     (code) = stackExpr e 
-stackExpr (Id s) = ("rPush " ++ s ++ "\n")
-stackExpr (Num i) = ("cPush " ++ (show i) ++ "\n")    
+stackExpr (Id s) = ("rPUSH " ++ s ++ "\n")
+stackExpr (Num i) = ("cPUSH " ++ (show i) ++ "\n")    
 
 
 
@@ -9373,12 +9373,7 @@ lexer file = do
         then return toks
         else return (fromJust maybeError)
 
-writeToFile :: Handle -> [String] -> IO ()
-writeToFile h [] = do
-    hClose h
-writeToFile h [t:ts] = do
-    hPutStrLn h t
-    writeToFile h ts
+
     
   
 
@@ -9389,12 +9384,11 @@ main = do
     let stmtls = minParser toks
     handle <- openFile "machine_code" WriteMode
 
-    writeToFile handle $ lines (fromEither stmtls)
-    --hClose handle
-
-{--
-    hPutStrLn handle (head (lines (fromEither stmtls)))
--}    
+    forM_ (lines (fromEither stmtls)) $ \s -> do
+        --print s
+        hPutStrLn handle s
+    hClose handle
+   
 
 alex_action_2 = \p s -> LCOMMENT p
 alex_action_3 = \p s -> RCOMMENT p
@@ -9417,7 +9411,7 @@ alex_action_19 = \p s -> DIV p
 alex_action_20 = \p s -> LPAR p
 alex_action_21 = \p s -> RPAR p
 alex_action_22 = \p s -> SEMICOLON p
-alex_action_23 = \p s -> ERROR p ("Unkown symbol " ++ s ++ " at ")
+alex_action_23 = \p s -> ERROR p ("Unknown symbol " ++ s ++ " at ")
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
 
 

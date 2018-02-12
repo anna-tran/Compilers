@@ -5,6 +5,8 @@ import Data.List
 import Data.Char
 import Data.Maybe
 import Data.Either
+import Data.Foldable
+
 import System.Environment
 import System.IO
 }
@@ -38,7 +40,7 @@ tokens :-
   \(                            {\p s -> LPAR p}
   \)                            {\p s -> RPAR p}
   \;                            {\p s -> SEMICOLON p}  
-  .                             {\p s -> ERROR p ("Unkown symbol " ++ s ++ " at ")}
+  .                             {\p s -> ERROR p ("Unknown symbol " ++ s ++ " at ")}
 
   
 {
@@ -88,23 +90,22 @@ data Stmt = If Exp Stmt Stmt
           | Block [Stmt]
           | Print Exp
           | Input Exp
---        deriving (Show)
+
 data Exp = Add Exp Exp   
          | Mul Exp Exp
          | Div Exp Exp 
          | Neg Exp
          | Id String
          | Num Integer  
---        deriving (Show)
 
 stackStmt :: Int -> Stmt -> (String,Int)
 stackStmt n (If e s1 s2) =  
     (expr 
         ++ "cJUMP label" ++ (show n) ++ "\n"
-        ++ code2
+        ++ code1
         ++ "JUMP label"++(show (n+1))++"\n"
         ++ "label"++(show n)++":\n"
-        ++ code1
+        ++ code2
         ++ "label"++(show (n+1))++":\n"
         , m) where
     (expr) = stackExpr e
@@ -114,13 +115,11 @@ stackStmt n (While e s) =
     ("label" ++ (show n) ++ ":\n"
         ++ (show e)
         ++ "cJUMP label" ++ (show (n+1)) ++ "\n"
-        ++ "JUMP label" ++ (show (n+2)) ++ "\n"
-        ++ "label" ++ (show (n+1)) ++ ":\n"
         ++ code
         ++ "JUMP label" ++ (show n) ++ "\n"
-        ++ "label" ++ (show (n+2))
+        ++ "label" ++ (show (n+1)) ++ ":\n"
         , m) where
-    (code,m) = stackStmt (n+3) s
+    (code,m) = stackStmt (n+2) s
 stackStmt n (Assign s e) =
     (expr
         ++ "LOAD " ++ s ++ "\n"
@@ -135,7 +134,7 @@ stackStmt n (Block (t:ts)) =
     (stmtCode
         ++ rmdCode
     , m) where
-    (stmtCode,n') = stackStmt (n+1) t
+    (stmtCode,n') = stackStmt n t
     (rmdCode,m)  = stackStmt (n') (Block ts)
 stackStmt n (Block []) = ("",n) 
 stackStmt n (Input (Id s)) =                            
@@ -174,8 +173,8 @@ stackExpr (Neg e) =
         ++ "OP2 * \n"
     ) where
     (code) = stackExpr e 
-stackExpr (Id s) = ("rPush " ++ s ++ "\n")
-stackExpr (Num i) = ("cPush " ++ (show i) ++ "\n")    
+stackExpr (Id s) = ("rPUSH " ++ s ++ "\n")
+stackExpr (Num i) = ("cPUSH " ++ (show i) ++ "\n")    
 
 
 
@@ -357,12 +356,7 @@ lexer file = do
         then return toks
         else return (fromJust maybeError)
 
-writeToFile :: Handle -> [String] -> IO ()
-writeToFile h [] = do
 
-writeToFile h [t:ts] = do
-    hPutStrLn h t
-    writeToFile h ts
     
   
 
@@ -373,7 +367,9 @@ main = do
     let stmtls = minParser toks
     handle <- openFile "machine_code" WriteMode
 
-    writeToFile handle $ lines (fromEither stmtls)
+    forM_ (lines (fromEither stmtls)) $ \s -> do
+        --print s
+        hPutStrLn handle s
     hClose handle
    
 }

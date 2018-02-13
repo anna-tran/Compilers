@@ -1,4 +1,5 @@
 begin
     input x;
-    write (x+1);
+    x := -x;
+    write (x/1);
 end

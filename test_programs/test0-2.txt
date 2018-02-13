@@ -1,5 +1,7 @@
 begin
     input x;
     write x;
+    y := 8;
     x := x+y;
+    write x;
 end

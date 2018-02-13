@@ -436,9 +436,9 @@ instance Show Stmt where
 
 
 instance Show Exp where
-    show (Add e1 e2)    = (show e1) ++ "+" ++ (show e2)
-    show (Mul e1 e2)    = (show e1) ++ "*" ++ (show e2)
-    show (Div e1 e2)    = (show e1) ++ "/" ++ (show e2)
+    show (Add e1 e2)    = " (" ++ (show e1) ++ " + " ++ (show e2)++ ")"
+    show (Mul e1 e2)    = " (" ++ (show e1) ++ " * " ++ (show e2)++ ")"
+    show (Div e1 e2)    = " (" ++ (show e1) ++ " / " ++ (show e2)++ ")"
     show (Neg e)        = "Neg (" ++ (show e) ++ ")"
     show (Id s)         = "Id " ++ s
     show (Num i)        = "Num " ++ (show i)

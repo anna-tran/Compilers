@@ -2,9 +2,9 @@
 
 This file is a compiler for the Minisculus language (as described below), written in Haskell using Alex, which produces basic stack machine code for a Minisculus program. The compiler works as follows
   1. Produce a list of tokens, each token associated with an AlexPosn and potentially with a value.
-    * If there is an error with the syntax, then print out an error message with the AlexPosn of where the error occured and end the program.
+      * If there is an error with the syntax, then print out an error message with the AlexPosn of where the error occured and end the program.
   2. Read the token list using the rules of the grammar.
-    * If the tokens do not abide by the rules, then print out an error message and end the program.
+      * If the tokens do not abide by the rules, then print out an error message and end the program.
   3. Print out the abstract syntax tree for the program.
   4. Produce the stack machine code and output it to a file named 'machine\_code'.
 
@@ -38,6 +38,7 @@ execute the Minisculus program.
 ## Tokens
 
 The tokens stand for the following lexemes:
+
     "if" => IF 
     "then" => THEN 
     "while" => WHILE

@@ -1,8 +1,8 @@
 {-# OPTIONS_GHC -fno-warn-unused-binds -fno-warn-missing-signatures #-}
 {-# LANGUAGE CPP #-}
-{-# LINE 1 "lexer.x" #-}
+{-# LINE 1 "m_compiler.x" #-}
 
-module Lexer where
+module M_Compiler where
 
 import Data.List
 import Data.Char
@@ -9058,7 +9058,7 @@ alex_actions = array (0 :: Int, 46)
   , (0,alex_action_23)
   ]
 
-{-# LINE 46 "lexer.x" #-}
+{-# LINE 46 "m_compiler.x" #-}
 
 
 comment :: [Token] -> Int -> [Token]
@@ -9074,6 +9074,8 @@ comment [t] n
 comment (t:ts) n
   | n > 0                 = comment ts n
   | n == 0                = t:(comment ts n)
+
+data Error = Error String
 
 data Token
   = IF AlexPosn
@@ -9106,18 +9108,19 @@ data Stmt = If Exp Stmt Stmt
           | Block [Stmt]
           | Print Exp
           | Input Exp
---        deriving (Show)
+          --deriving (Show)
+
 data Exp = Add Exp Exp   
          | Mul Exp Exp
          | Div Exp Exp 
          | Neg Exp
          | Id String
          | Num Integer  
---        deriving (Show)
+         --deriving (Show)
 
 stackStmt :: Int -> Stmt -> (String,Int)
 stackStmt n (If e s1 s2) =  
-    (expr 
+    (expr
         ++ "cJUMP label" ++ (show n) ++ "\n"
         ++ code1
         ++ "JUMP label"++(show (n+1))++"\n"
@@ -9130,12 +9133,13 @@ stackStmt n (If e s1 s2) =
     (code2,m) = stackStmt n' s2
 stackStmt n (While e s) =
     ("label" ++ (show n) ++ ":\n"
-        ++ (show e)
+        ++ expr
         ++ "cJUMP label" ++ (show (n+1)) ++ "\n"
         ++ code
         ++ "JUMP label" ++ (show n) ++ "\n"
         ++ "label" ++ (show (n+1)) ++ ":\n"
         , m) where
+    (expr) = stackExpr e        
     (code,m) = stackStmt (n+2) s
 stackStmt n (Assign s e) =
     (expr
@@ -9151,7 +9155,7 @@ stackStmt n (Block (t:ts)) =
     (stmtCode
         ++ rmdCode
     , m) where
-    (stmtCode,n') = stackStmt (n+1) t
+    (stmtCode,n') = stackStmt n t
     (rmdCode,m)  = stackStmt (n') (Block ts)
 stackStmt n (Block []) = ("",n) 
 stackStmt n (Input (Id s)) =                            
@@ -9200,114 +9204,262 @@ stackExpr (Num i) = ("cPUSH " ++ (show i) ++ "\n")
 
 minParser :: [Token] -> Either String Stmt
 minParser ((ERROR p s):ts) = Left (s ++ (show p))
-minParser ts = (Right s) where
-        (s, rest) = stmt ts
+minParser ts = 
+    case (stmt ts) of 
+        Left (Error msg) -> Left msg
+        Right (s,rest) -> Right s
 
-stmt:: [Token] -> (Stmt,[Token])
-stmt ((IF _):rest) = (If e s1 s2,rest') where
-            (e,rest1) = expr rest
-            ((s1,s2),rest') = thenpart rest1
-stmt ((WHILE _):rest) = (While e s,rest') where
-            (e,rest1) = expr rest
-            (s,rest') = dopart rest1
-stmt ((INPUT _):rest) = (Input e,rest') where
-            (e,rest') = expr rest
-stmt ((ID _ s):(ASSIGN _):rest) = (Assign s e,rest') where
-            (e,rest') = expr rest
-stmt ((WRITE _):rest) = (Print e,rest') where
-            (e,rest') = expr rest
-stmt ((BEGIN _):rest) = (Block sl,rest') where
-            (sl,rest') = stmtlist rest
-
-thenpart :: [Token] -> ((Stmt,Stmt),[Token])
-thenpart ((THEN _):rest) = ((s1,s2),rest') where
-            (s1,rest1) = stmt rest
-            (s2,rest') = elsepart rest1
-
-elsepart :: [Token] -> (Stmt,[Token])            
-elsepart ((ELSE _):rest) = (s,rest') where
-            (s,rest') = stmt rest
-
-dopart :: [Token] -> (Stmt,[Token])            
-dopart ((DO _):rest) = (s,rest') where
-            (s,rest') = stmt rest
+stmt:: [Token] -> Either Error (Stmt,[Token])
+stmt ((IF _):rest) = 
+    case (expr rest) of
+        Left err -> Left err
+        Right (e, rest1) ->
+            case (thenpart rest1) of
+                Left err -> Left err
+                Right ((s1,s2),rest') -> Right (If e s1 s2,rest')
 
 
-stmtlist :: [Token] -> ([Stmt],[Token])
-stmtlist ts = (sl,ts') where
-      (sl,ts') = stmtlist1 ts
+stmt ((WHILE _):rest) = 
+    case (expr rest) of
+        Left err -> Left err
+        Right (e, rest1) ->
+            case (dopart rest1) of
+                Left err -> Left err
+                Right (s,rest') -> Right (While e s,rest')
+
+
+stmt ((INPUT p):rest) = 
+    case (expr rest) of
+        Left err -> Left err
+        Right (e, rest') -> 
+            case e of
+                Num _ -> Left (Error $ "Error in input: input variable must start with an alphabetic character "++(show p))
+                Id _ -> Right (Input e,rest')
+
+
+stmt ((ID _ s):(ASSIGN _):rest) = 
+    case (expr rest) of
+        Left err -> Left err
+        Right (e, rest') -> Right (Assign s e,rest')
+
+
+stmt ((WRITE _):rest) = 
+    case (expr rest) of
+        Left err -> Left err
+        Right (e, rest') -> Right (Print e,rest')
+
+
+stmt ((BEGIN _):rest) = 
+    case (stmtlist rest) of
+        Left err -> Left err
+        Right (sl, rest') -> Right (Block sl,rest')
+
+
+stmt (t:ts) = Left (Error $ 
+    "Error in stmt: expected a conditional statement, a loop, an input, an assignment, a write statement or a block of statements " 
+    ++ (show (position t)))            
+
+thenpart :: [Token] -> Either Error ((Stmt,Stmt),[Token])
+thenpart ((THEN _):rest) = 
+    case (stmt rest) of
+        Left err -> Left err
+        Right (s1, rest1) ->
+            case (elsepart rest1) of
+                Left err -> Left err
+                Right (s2,rest') -> Right ((s1,s2),rest')
+
+thenpart (t:ts) = Left (Error $ 
+    "Error in Thenpart: expected keyword 'then' " 
+    ++ (show (position t)))
+
+elsepart :: [Token] -> Either Error (Stmt,[Token])            
+elsepart ((ELSE _):rest) = (stmt rest)
+elsepart (t:ts) = Left (Error $ 
+    "Error in Elsepart: expected keyword 'else' " 
+    ++ (show (position t)))
+
+dopart :: [Token] -> Either Error (Stmt,[Token])            
+dopart ((DO _):rest) = (stmt rest)
+dopart (t:ts) = Left (Error $ 
+    "Error in Dopart: expected keyword 'do' " 
+    ++ (show (position t)))            
+
+
+
+stmtlist :: [Token] -> Either Error ([Stmt],[Token])
+stmtlist ts = (stmtlist1 ts)
+
       
-stmtlist1 :: [Token] -> ([Stmt],[Token])
-stmtlist1 ((END _):rest) = ([],rest)
-stmtlist1 ts = ((s1:sl),rest') where
-            (s1,rest1) = stmt ts
-            (sl,rest') = semicolonpart rest1
+stmtlist1 :: [Token] -> Either Error ([Stmt],[Token])
+stmtlist1 [] = Left (Error "Error in Stmtlist: missing keyword 'end'")
+stmtlist1 ((END _):rest) = Right ([],rest)
+stmtlist1 ts = 
+    case (stmt ts) of
+        Left err -> Left err
+        Right (s1, rest1) ->
+            case (semicolonpart rest1) of
+                Left err -> Left err
+                Right (sl,rest') -> Right ((s1:sl),rest')
 
-semicolonpart :: [Token] -> ([Stmt],[Token])
-semicolonpart ((SEMICOLON _):rest) = (sl,rest') where
-      (sl,rest') = stmtlist1 rest
+
+semicolonpart :: [Token] -> Either Error ([Stmt],[Token])
+semicolonpart ((SEMICOLON _):rest) = (stmtlist1 rest)
+
+
+semicolonpart (t:ts) = Left (Error $ 
+    "Error in Semicolonpart: expected ; " 
+    ++ (show (position t)))
 
 
 
-expr :: [Token] -> (Exp,[Token])
-expr ts = (f e,ts') where
-      (e,ts1) = term ts
-      (f,ts') = expr1 ts1
+expr :: [Token] -> Either Error (Exp,[Token])
+expr ts = 
+    case (term ts) of
+        Left err -> Left err
+        Right (e, ts1) ->
+            case (expr1 ts1) of
+                Left err -> Left err
+                Right (f, ts') -> Right (f e,ts')
 
-expr1:: [Token] -> (Exp -> Exp,[Token])    
-expr1 ((ADD _):ts) = (g,ts')  where 
-            (e', ts1) = term ts
-            (f, ts') = expr1 ts1
-            g x = f(Add x e')               --  g::  Exp -> Exp
-expr1 ((SUB _):ts) = (g,ts')  where 
-            (e', ts1) = term ts
-            (f, ts') = expr1 ts1
-            g x = f(Add x (Neg e'))         --  g::  Exp -> Exp   
-expr1 ts = (g,ts)  where
+
+
+expr1:: [Token] -> Either Error (Exp -> Exp,[Token])    
+expr1 ((ADD _):ts) = 
+    case (term ts) of
+        Left err -> Left err
+        Right (e, ts1) ->
+            case (expr1 ts1) of
+                Left err -> Left err
+                Right (f, ts') -> Right (g,ts')
+                    where g x = f(Add x e)
+
+
+expr1 ((SUB _):ts) = 
+    case (term ts) of
+        Left err -> Left err
+        Right (e, ts1) ->
+            case (expr1 ts1) of
+                Left err -> Left err
+                Right (f, ts') -> Right (g,ts')
+                    where g x = f(Add x (Neg e))
+
+
+expr1 ts = Right (g,ts)  where
             g x = x                         --  g::  Exp -> Exp    
 
 
-term :: [Token] -> (Exp,[Token]) 
-term ts = (f e,ts') where
-            (e,ts1) = factor ts
-            (f,ts') = term1 ts1
+term :: [Token] -> Either Error (Exp,[Token]) 
+term ts = 
+    case (factor ts) of
+        Left err -> Left err
+        Right (e, ts1) ->
+            case (term1 ts1) of
+                Left err -> Left err
+                Right (f, ts') -> Right (f e,ts')
 
-term1:: [Token] -> (Exp -> Exp,[Token])    
-term1 ((MUL _):ts) = (g,ts')  where 
-            (e', ts1) = factor ts
-            (f, ts') = term1 ts1
-            g x = f(Mul x e')               --  g::  Exp -> Exp
-term1 ((DIV _):ts) = (g,ts')  where 
-            (e', ts1) = factor ts
-            (f, ts') = term1 ts1
-            g x = f(Div x e')               --  g::  Exp -> Exp         
-term1 ts = (g,ts)  where
+
+
+term1:: [Token] -> Either Error (Exp -> Exp,[Token])    
+term1 ((MUL _):ts) = 
+    case (factor ts) of
+        Left err -> Left err
+        Right (e', ts1) ->
+            case (term1 ts1) of
+                Left err -> Left err
+                Right (f, ts') -> Right (g,ts')
+                    where g x = f(Mul x e')
+
+
+term1 ((DIV _):ts) =     
+    case (factor ts) of
+        Left err -> Left err
+        Right (e', ts1) ->
+            case (term1 ts1) of
+                Left err -> Left err
+                Right (f, ts') -> Right (g,ts')
+                    where g x = f(Div x e')
+
+
+
+term1 ts = Right (g,ts)  where
             g x = x                         --  g::  Exp -> Exp          
 
-factor :: [Token] -> (Exp,[Token])
-factor ((LPAR _):rest) = (e,rest') where
-            (e,rest1) = expr rest
-            (rest') = rparpart rest1
-factor ((ID _ s):rest) = (Id s,rest)
-factor ((NUM _ s):rest) = (Num (read s),rest)
-factor ((SUB _):rest) = (Neg e,rest') where
-            (e,rest') = expr rest         
-
-rparpart :: [Token] -> [Token]
-rparpart ((RPAR _):rest) = rest
+factor :: [Token] -> Either Error (Exp,[Token])
+factor ((LPAR _):rest) = 
+    case (expr rest) of
+        Left err -> Left err
+        Right (e, rest1) ->
+            case (rparpart rest1) of
+                Left err -> Left err
+                Right rest' -> Right (e,rest')
 
 
 
+factor ((ID _ s):rest) = Right (Id s,rest)
+factor ((NUM _ s):rest) = Right (Num (read s),rest)
+factor ((SUB _):rest) = 
+    case (expr rest) of
+        Left err -> Left err
+        Right (e, rest') -> Right (Neg e,rest')
 
+  
+
+factor (t:ts) = Left (Error $ "Error in Factor: expected (, an identifier, or a number "++(show (position t)))
+
+rparpart :: [Token] -> Either Error [Token]
+rparpart ((RPAR _):rest) = Right rest
+rparpart (t:ts) = Left (Error $ "Error in RParPart: expected ) " ++ (show ( position t)))
+
+addTabs :: Int -> String
+addTabs 0 = ""
+addTabs n = "  " ++ (addTabs (n-1))
+
+indent :: Int -> String -> String
+indent _ [] = ""
+indent 0 ts = ts
+indent n (t:ts) 
+    | t == '\n'     = t:((addTabs n) ++ (indent n ts))
+    | otherwise     = t:((indent n ts))
+
+concatStmts :: String -> [Stmt] -> String
+concatStmts s [] = s
+concatStmts s (x:xs) = (concatStmts s' xs) where
+    s' = (s ++ (indent 1 ("\n" ++ (show x)) ))
+    
 instance Show Stmt where
-    show s = str 
-        where
-        (str,counter) = stackStmt 0 s
+    show (If e s1 s2) = 
+        "If " ++ (show e)
+        ++ (indent 1 (
+            "\n" ++ "Then " ++ (show s1)
+            ++ "\n" ++ "Else " ++ (show s2)))
+    show (While e s) =
+        "While " ++ (show e) ++ " Do"
+        ++ (indent 1 ("\n" ++ (show s)))
+
+    show (Assign s e) =
+        "Assign " ++ s ++ " " ++ (show e)
+
+    show (Print e) = 
+        "Print " ++ (show e)
+    show (Input e) = 
+        "Input " ++ (show e)
+
+    show (Block stmts) = 
+        "Block [" 
+        ++ (concatStmts "" stmts)
+        ++ "\n]"
+            
+
 
 instance Show Exp where
-    show e = str 
-        where
-        (str) = stackExpr e       
+    show (Add e1 e2)    = " (" ++ (show e1) ++ " + " ++ (show e2)++ ")"
+    show (Mul e1 e2)    = " (" ++ (show e1) ++ " * " ++ (show e2)++ ")"
+    show (Div e1 e2)    = " (" ++ (show e1) ++ " / " ++ (show e2)++ ")"
+    show (Neg e)        = "Neg (" ++ (show e) ++ ")"
+    show (Id s)         = "Id " ++ s
+    show (Num i)        = "Num " ++ (show i)
+
+   
 
 instance Show Token where
     show (IF p) = "IF"
@@ -9327,9 +9479,9 @@ instance Show Token where
     show (LPAR p) = "LPAR"
     show (RPAR p) = "RPAR"
     show (SEMICOLON p) = "SEMICOLON"
-    show (ID p s) = "ID " ++ show s
-    show (NUM p s) = "NUM " ++ show s
-    show (ERROR p s) = "ERROR " ++ show s ++ " " ++ show p
+    show (ID p s) = "ID " ++ s
+    show (NUM p s) = "NUM " ++ s
+    show (ERROR p s) = "Error " ++ s ++ (show p)
 
 position :: Token -> AlexPosn
 position (IF p) = p
@@ -9364,6 +9516,12 @@ fromEither :: Either String Stmt -> String
 fromEither (Left s) = s
 fromEither (Right s) = (show s)
 
+getRight :: Either String Stmt -> Stmt
+getRight (Right s) = s
+
+getLeft :: Either String Stmt -> String
+getLeft (Left s) = s
+
 lexer :: String -> IO [Token]
 lexer file = do
     s <- readFile file
@@ -9374,20 +9532,38 @@ lexer file = do
         else return (fromJust maybeError)
 
 
-    
+checkErrorToks :: [Token] -> Bool
+checkErrorToks [] = False
+checkErrorToks ((ERROR _ _):ts) = True
+checkErrorToks ts = False
+
+checkErrorStmt :: Either String Stmt -> Bool
+checkErrorStmt (Left s) = True
+checkErrorStmt (Right s) = False
+
+
   
 
 main = do
     args <- getArgs
     let file = args !! 0
     toks <- (lexer file)
-    let stmtls = minParser toks
-    handle <- openFile "machine_code" WriteMode
+    if (checkErrorToks toks)
+        then do
+            print $ head toks
+        else do
+            let stmtls = minParser toks
+            if (checkErrorStmt stmtls)
+                then print (getLeft stmtls)
+                else do
+                    print (getRight stmtls)
+                    let (str,counter) = (stackStmt 0 (getRight stmtls))
+                    handle <- openFile "machine_code" WriteMode
+                    hPutStrLn handle str
+                    hClose handle
+    
 
-    forM_ (lines (fromEither stmtls)) $ \s -> do
-        --print s
-        hPutStrLn handle s
-    hClose handle
+    
    
 
 alex_action_2 = \p s -> LCOMMENT p

@@ -1,20 +1,7 @@
-READ y
-cPUSH 0
-LOAD x
-label3:
-rPUSH y
-cJUMP label4
-rPUSH x
-cPUSH 1
-OP2 + 
-LOAD x
-rPUSH y
-cPUSH 1
-cPUSH -1 
+rPUSH a
+rPUSH b
+rPUSH c
 OP2 * 
 OP2 + 
-LOAD y
-JUMP label3
-label4:
-rPUSH x
-PRINT
+LOAD x
+

@@ -65,11 +65,11 @@ Assure that Haskell and the Alex module, as well as the chs shell are installed.
 
 To compile and use the program:
   1. Run
-      alex lexer.x
+      alex m_compiler.x
   2. Run
-      ghc -main-is Lexer -o lexer lexer.hs
+      ghc -main-is M_Compiler -o compiler m_compiler.hs
   3. Run
-      ./lexer \<input file\>
+      ./compiler \<input file\>
       where \<input file\> is the file with the contents you want to test
   4. Enter into the chs shell with the command 'csh'
   5. Run the ./bashstack script to setup the environment for the compiler

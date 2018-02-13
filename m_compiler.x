@@ -1,5 +1,5 @@
 {
-module Lexer where
+module M_Compiler where
 
 import Data.List
 import Data.Char

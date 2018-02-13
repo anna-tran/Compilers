@@ -1,0 +1,4 @@
+begin
+    x:=1;
+    if x then x:=0 else x:=10;
+

@@ -42,11 +42,18 @@ CommaDeclMoreParams. MoreParams ::= "," BasicDecl MoreParams;
 NoMoreParams. MoreParams ::= ;
 
 
-BasicDecl. BasicDecl ::= TokenID BasicArrayDim ":" TokenID;
+BasicDecl. BasicDecl ::= TokenID [BasicArrayDim] ":" Type;
 
+basicArrDim. BasicArrayDim ::= "[" "]" ;
 
+[]. [BasicArrayDim] ::= ;
+(:). [BasicArrayDim] ::= BasicArrayDim [BasicArrayDim] ;
+
+{-
 BasicArrDim. BasicArrayDim ::= "[" "]" BasicArrayDim;
 NoBasicArrDim. BasicArrayDim ::= ;
+-}
+
 
 
 ProgStmtsBody. ProgBody ::= "begin" ProgStmts "end";
@@ -104,7 +111,7 @@ MMul. MulOp ::= "*";
 MDiv. MulOp ::= "/";
 
 EnclosedExpr. IntFactor ::= "(" Expr ")";
-MSize. IntFactor ::= "size" "(" TokenID BasicArrayDim ")";
+MSize. IntFactor ::= "size" "(" TokenID [BasicArrayDim] ")";
 MFloat. IntFactor ::= "float" "(" Expr ")";
 MFloor. IntFactor ::= "floor" "(" Expr ")";
 MCeil. IntFactor ::= "ceil" "(" Expr ")";

@@ -78,9 +78,10 @@ All other symbols are terminals.
   |  |  **|**  | **eps**
   | //MoreParams// | -> | ``,`` //BasicDecl// //MoreParams// 
   |  |  **|**  | **eps**
-  | //BasicDecl// | -> | //TokenID// //BasicArrayDim// ``:`` //TokenID// 
-  | //BasicArrayDim// | -> | ``[`` ``]`` //BasicArrayDim// 
-  |  |  **|**  | **eps**
+  | //BasicDecl// | -> | //TokenID// //[BasicArrayDim]// ``:`` //Type// 
+  | //BasicArrayDim// | -> | ``[`` ``]`` 
+  | //[BasicArrayDim]// | -> | **eps**
+  |  |  **|**  | //BasicArrayDim// //[BasicArrayDim]// 
   | //ProgBody// | -> | ``begin`` //ProgStmts// ``end`` 
   | //FunBody// | -> | ``begin`` //ProgStmts// ``return`` //Expr// ``;`` ``end`` 
   | //ProgStmts// | -> | //Stmt// ``;`` //ProgStmts// 
@@ -113,7 +114,7 @@ All other symbols are terminals.
   | //MulOp// | -> | ``*`` 
   |  |  **|**  | ``/`` 
   | //IntFactor// | -> | ``(`` //Expr// ``)`` 
-  |  |  **|**  | ``size`` ``(`` //TokenID// //BasicArrayDim// ``)`` 
+  |  |  **|**  | ``size`` ``(`` //TokenID// //[BasicArrayDim]// ``)`` 
   |  |  **|**  | ``float`` ``(`` //Expr// ``)`` 
   |  |  **|**  | ``floor`` ``(`` //Expr// ``)`` 
   |  |  **|**  | ``ceil`` ``(`` //Expr// ``)`` 

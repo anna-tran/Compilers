@@ -46,10 +46,10 @@ data MoreParams
     = CommaDeclMoreParams BasicDecl MoreParams | NoMoreParams
   deriving (Eq, Ord, Show, Read)
 
-data BasicDecl = BasicDecl TokenID BasicArrayDim TokenID
+data BasicDecl = BasicDecl TokenID [BasicArrayDim] Type
   deriving (Eq, Ord, Show, Read)
 
-data BasicArrayDim = BasicArrDim BasicArrayDim | NoBasicArrDim
+data BasicArrayDim
   deriving (Eq, Ord, Show, Read)
 
 data ProgBody = ProgStmtsBody ProgStmts
@@ -103,7 +103,7 @@ data MulOp = MMul | MDiv
 
 data IntFactor
     = EnclosedExpr Expr
-    | MSize TokenID BasicArrayDim
+    | MSize TokenID [BasicArrayDim]
     | MFloat Expr
     | MFloor Expr
     | MCeil Expr

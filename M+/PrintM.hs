@@ -145,13 +145,12 @@ instance Print MoreParams where
 
 instance Print BasicDecl where
   prt i e = case e of
-    BasicDecl tokenid1 basicarraydim tokenid2 -> prPrec i 0 (concatD [prt 0 tokenid1, prt 0 basicarraydim, doc (showString ":"), prt 0 tokenid2])
+    BasicDecl tokenid basicarraydims type_ -> prPrec i 0 (concatD [prt 0 tokenid, prt 0 basicarraydims, doc (showString ":"), prt 0 type_])
 
 instance Print BasicArrayDim where
   prt i e = case e of
-    BasicArrDim basicarraydim -> prPrec i 0 (concatD [doc (showString "["), doc (showString "]"), prt 0 basicarraydim])
-    NoBasicArrDim -> prPrec i 0 (concatD [])
-
+  prtList _ [] = (concatD [])
+  prtList _ (x:xs) = (concatD [prt 0 x, prt 0 xs])
 instance Print ProgBody where
   prt i e = case e of
     ProgStmtsBody progstmts -> prPrec i 0 (concatD [doc (showString "begin"), prt 0 progstmts, doc (showString "end")])
@@ -225,7 +224,7 @@ instance Print MulOp where
 instance Print IntFactor where
   prt i e = case e of
     EnclosedExpr expr -> prPrec i 0 (concatD [doc (showString "("), prt 0 expr, doc (showString ")")])
-    MSize tokenid basicarraydim -> prPrec i 0 (concatD [doc (showString "size"), doc (showString "("), prt 0 tokenid, prt 0 basicarraydim, doc (showString ")")])
+    MSize tokenid basicarraydims -> prPrec i 0 (concatD [doc (showString "size"), doc (showString "("), prt 0 tokenid, prt 0 basicarraydims, doc (showString ")")])
     MFloat expr -> prPrec i 0 (concatD [doc (showString "float"), doc (showString "("), prt 0 expr, doc (showString ")")])
     MFloor expr -> prPrec i 0 (concatD [doc (showString "floor"), doc (showString "("), prt 0 expr, doc (showString ")")])
     MCeil expr -> prPrec i 0 (concatD [doc (showString "ceil"), doc (showString "("), prt 0 expr, doc (showString ")")])

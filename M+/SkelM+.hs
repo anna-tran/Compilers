@@ -15,7 +15,7 @@ transTokenID x = case x of
   TokenID string -> string
 transTokenReal :: TokenReal -> Float
 transTokenReal x = case x of
-  TokenReal string -> (read string)
+  TokenReal string -> (read string :: Float)
 
 transProg :: Prog -> A.M_prog
 transProg x = case x of
@@ -38,7 +38,11 @@ transDecl x = case x of
 
 transVarDecl :: VarDecl -> (String,[A.M_expr], A.M_type)
 transVarDecl x = case x of
-  MVar tokenid arrdim type_ -> ((transTokenID tokenid), (transArrDim arrdim), (transType type_))
+  MVar tokenid arrdim type_ -> (id,ad,t)
+            where
+                id = transTokenID tokenid
+                ad = transArrDim arrdim
+                t = transType type_
 
 transType :: Type -> A.M_type
 transType x = case x of
@@ -50,91 +54,153 @@ transArrDim :: ArrDim -> [A.M_expr]
 transArrDim x = case x of
   ExprArrDim expr arrdim -> (transExpr expr):(transArrDim arrdim)
   NoArrDim -> []
-transFunDecl :: FunDecl -> (String,[(String,Int,M_type)],M_type,[M_decl],[M_stmt])
+transFunDecl :: FunDecl -> (String,[(String,Int,A.M_type)],A.M_type,[A.M_decl],[A.M_stmt])
 transFunDecl x = case x of
-  MFun tokenid paramlist type_ funblock -> ((transTokenID tokenid), )
+  MFun tokenid paramlist type_ funblock -> ((transTokenID tokenid), 
+                                              (transParamList paramlist), 
+                                              (transType type_),
+                                              decls,
+                                              stmts)
+      where
+        (decls, stmts)= (transFunBlock funblock)
 
 
-transFunBlock :: FunBlock -> Result
+transFunBlock :: FunBlock -> ([A.M_decl],[A.M_stmt])
 transFunBlock x = case x of
-  DeclFunBody decls funbody -> failure x
-transParamList :: ParamList -> Result
+  DeclFunBody decls funbody -> ((transDecls decls), (transFunBody funbody))
+
+transParamList :: ParamList -> [(String,Int,A.M_type)]
 transParamList x = case x of
-  Params params -> failure x
-transParams :: Params -> Result
+  Params params -> transParams params
+
+transParams :: Params -> [(String,Int,A.M_type)]
 transParams x = case x of
-  DeclMoreParams basicdecl moreparams -> failure x
-  NoParams -> failure x
-transMoreParams :: MoreParams -> Result
+  DeclMoreParams basicdecl moreparams -> (transBasicDecl basicdecl):(transMoreParams moreparams)
+  NoParams -> []
+
+transMoreParams :: MoreParams -> [(String,Int,A.M_type)]
 transMoreParams x = case x of
-  CommaDeclMoreParams basicdecl moreparams -> failure x
-  NoMoreParams -> failure x
-transBasicDecl :: BasicDecl -> Result
+  CommaDeclMoreParams basicdecl moreparams -> (transBasicDecl basicdecl):(transMoreParams moreparams)
+  NoMoreParams -> []
+
+transBasicDecl :: BasicDecl -> (String,Int,A.M_type)
 transBasicDecl x = case x of
-  BasicDecl tokenid1 basicarraydim tokenid2 -> failure x
-transBasicArrayDim :: BasicArrayDim -> Result
-transBasicArrayDim x = case x of
-  BasicArrDim basicarraydim -> failure x
-  NoBasicArrDim -> failure x
-transProgBody :: ProgBody -> Result
+  BasicDecl tokenid basicarraydims type_ -> ((transTokenID tokenid),
+                                            (transBasicArrayDim basicarraydims),
+                                            (transType type_))
+
+transBasicArrayDim :: BasicArrayDim -> Int
+transBasicArrayDim [] = 0
+transBasicArrayDim (x:xs) = 1+(transBasicArrayDim xs)
+
+
+transProgBody :: ProgBody -> [A.M_stmt]
 transProgBody x = case x of
-  ProgStmtsBody progstmts -> failure x
-transFunBody :: FunBody -> Result
+  ProgStmtsBody progstmts -> transProgStmts progstmts
+
+transFunBody :: FunBody -> [A.M_stmt]
 transFunBody x = case x of
-  FunBody progstmts expr -> failure x
-transProgStmts :: ProgStmts -> Result
+  FunBody progstmts expr -> (transProgStmts progstmts) : (A.M_return (transExpr expr))
+
+transProgStmts :: ProgStmts -> [A.M_stmt]
 transProgStmts x = case x of
-  ProgStmts stmt progstmts -> failure x
-  NoProgStmts -> failure x
-transStmt :: Stmt -> Result
+  ProgStmts stmt progstmts -> (transStmt stmt) : (transProgStmts progstmts)
+  NoProgStmts -> []
+transStmt :: Stmt -> A.M_stmt
 transStmt x = case x of
-  MCond expr stmt1 stmt2 -> failure x
-  MWhile expr stmt -> failure x
-  MRead identifier -> failure x
-  MAss identifier expr -> failure x
-  MPrint expr -> failure x
-  MBlock block -> failure x
-transIdentifier :: Identifier -> Result
+  MCond expr stmt1 stmt2 -> A.M_cond (e,s1,s2)
+            where
+                e = transExpr expr
+                s1 = transStmt stmt1
+                s2 = transStmt stmt2
+  MWhile expr stmt -> A.M_while (e,s1)
+            where
+                e = transExpr expr
+                s1 = transStmt stmt
+  MRead identifier -> A.M_read (str,exprList)
+            where
+                (str,exprList) = (transIdentifier identifier)
+  MAss identifier expr -> A.M_ass (str, exprList, e)
+            where
+                e = (transExpr expr)
+                (str, exprList) = (transIdentifier identifier)
+  MPrint expr -> A.M_print (transExpr expr)
+  MBlock block -> A.M_block (transBlock block)
+
+transIdentifier :: Identifier -> (String,[A.M_expr])
 transIdentifier x = case x of
-  MId tokenid arrdim -> failure x
-transExpr :: Expr -> Result
+  MId tokenid arrdim -> (id, ad)
+            where
+                id = transTokenID tokenid
+                ad = transArrDim arrdim
+
+transExpr :: Expr -> A.M_expr 
 transExpr x = case x of
-  ExprBintTerm expr bintterm -> failure x
-  BintTerm bintterm -> failure x
-transBintTerm :: BintTerm -> Result
+  ExprBintTerm expr bintterm -> A.M_app (M_or, (e:bt))
+            where
+                e = transExpr expr
+                bt = transBintTerm bintterm
+  BintTerm bintterm -> transBintTerm bintterm
+
+
+transBintTerm :: BintTerm -> A.M_expr 
 transBintTerm x = case x of
-  BintTermBintFactor bintterm bintfact -> failure x
-  BintFactor bintfact -> failure x
-transBintFact :: BintFact -> Result
+  BintTermBintFactor bintterm bintfact -> A.M_app (M_and, (bt:bf))
+            where
+                bt = transBintTerm bintterm
+                bf = transBintFact bintfact
+  BintFactor bintfact -> transBintFact bintfact
+
+
+transBintFact :: BintFact -> A.M_expr
 transBintFact x = case x of
-  NotBintFactor bintfact -> failure x
-  IntECompareIntE intexpr1 compareop intexpr2 -> failure x
-  IntE intexpr -> failure x
+  NotBintFactor bintfact -> A.M_app (M_not, [bf])
+            where
+                bf = transBintFact bintfact
+  IntECompareIntE intexpr1 compareop intexpr2 -> A.M_app (op, (e1:e2))
+            where
+                op = transCompareOp compareop
+                e1 = transIntExpr intexpr1
+                e2 = transIntExpr intexpr2
+  IntE intexpr -> transIntExpr intexpr
 
-
-transCompareOp :: CompareOp -> M_operation
+transCompareOp :: CompareOp -> A.M_operation
 transCompareOp x = case x of
-  MEq -> M_eq
-  MLt -> M_lt
-  MGt -> M_gt
-  MLe -> M_le
-  MGe -> M_ge
+  MEq -> A.M_eq
+  MLt -> A.M_lt
+  MGt -> A.M_gt
+  MLe -> A.M_le
+  MGe -> A.M_ge
 
 
-transIntExpr :: IntExpr -> Result
+
+
+transIntExpr :: IntExpr -> A.M_expr
 transIntExpr x = case x of
-  IntEAddIntT intexpr addop intterm -> failure x
-  IntT intterm -> failure x
-transAddOp :: AddOp -> M_operation
-transAddOp x = case x of
-  MAdd -> M_add
-  MSub -> M_sub
-transIntTerm :: IntTerm -> Result
-transIntTerm x = case x of
-  IntTMulIntF intterm mulop intfactor -> failure x
-  IntF intfactor -> failure x
+  IntEAddIntT intexpr addop intterm -> A.M_app (op, (ie:it))
+                where
+                    op = transAddOp addop
+                    ie = transIntExpr intexpr
+                    it = transIntTerm intterm
 
-transMulOp :: MulOp -> M_operation
+  IntT intterm -> transIntTerm intterm
+
+transAddOp :: AddOp -> A.M_operation
+transAddOp x = case x of
+  MAdd -> A.M_add
+  MSub -> A.M_sub
+
+transIntTerm :: IntTerm -> A.M_expr
+transIntTerm x = case x of
+  IntTMulIntF intterm mulop intfactor -> A.M_app (op, (it:intf))
+                where
+                    op = transMulOp mulop
+                    it = transIntTerm intterm
+                    intf = transIntFactor intfactor
+
+  IntF intfactor -> transIntFactor IntFactor
+
+transMulOp :: MulOp -> A.M_operation
 transMulOp x = case x of
   MMul -> A.M_mul
   MDiv -> A.M_div
@@ -142,15 +208,23 @@ transMulOp x = case x of
 transIntFactor :: IntFactor -> A.M_expr
 transIntFactor x = case x of
   EnclosedExpr expr -> transExpr expr
-  MSize tokenid basicarraydim -> A.M_size ((transTokenID tokenid), (transBasicArrayDim basicarraydim))
+  MSize tokenid basicarraydim -> A.M_size (id,arrDim)
+                where
+                    id = (transTokenID tokenid)
+                    arrDim = (transBasicArrayDim basicarraydim)
   MFloat expr -> A.M_app (A.M_float, (transExpr expr))
   MFloor expr -> A.M_app (A.M_floor, (transExpr expr))
   MCeil expr -> A.M_app (A.M_ceil, (transExpr expr))
-  Id_modlist tokenid modifierlist -> A.M_id ((transTokenID tokenid), (transModifierList modifierlist))
+  Id_modlist tokenid modifierlist -> A.M_id (id, modList)
+                where
+                    id = (transTokenID tokenid)
+                    modList = (transModifierList modifierlist)
   MIval integer -> A.M_ival (read integer :: Integer)
   MRval double -> A.M_rval (read double :: Float)
   MBval mbool -> A.M_bval (transMbool mbool)
-  MNval intfactor -> A.M_app (A.M_sub, (transIntFactor intfactor))
+  MNval intfactor -> A.M_app (A.M_sub, [intf])
+                where 
+                    intf = transIntFactor intfactor
 
 transMbool :: Mbool -> Bool
 transMbool x = case x of
@@ -158,16 +232,17 @@ transMbool x = case x of
   NoFalse -> False
 
 
-transModifierList :: ModifierList -> Result
+transModifierList :: ModifierList -> [A.M_expr]
 transModifierList x = case x of
-  EnclosedArgs args -> failure x
-  ArrDim arrdim -> failure x
-transArgs :: Args -> Result
+  EnclosedArgs args -> transArgs args
+  ArrDim arrdim -> transArrDim arrdim
+
+transArgs :: Args -> [A.M_expr]
 transArgs x = case x of
-  MoreArgs expr moreargs -> failure x
-  NoArgs -> failure x
-transMoreArgs :: MoreArgs -> Result
+  MoreArgs expr moreargs -> (transExpr expr):(transMoreArgs moreargs)
+  NoArgs -> []
+transMoreArgs :: MoreArgs -> [A.M_expr]
 transMoreArgs x = case x of
-  ExprMoreArgs expr moreargs -> failure x
-  NoMoreArgs -> failure x
+  ExprMoreArgs expr moreargs -> (transExpr expr):(transMoreArgs moreargs)
+  NoMoreArgs -> []
 

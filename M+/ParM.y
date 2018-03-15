@@ -22,6 +22,7 @@ import ErrM
 %name pMoreParams MoreParams
 %name pBasicDecl BasicDecl
 %name pBasicArrayDim BasicArrayDim
+%name pListBasicArrayDim ListBasicArrayDim
 %name pProgBody ProgBody
 %name pFunBody FunBody
 %name pProgStmts ProgStmts
@@ -132,10 +133,12 @@ MoreParams :: { MoreParams }
 MoreParams : ',' BasicDecl MoreParams { AbsM.CommaDeclMoreParams $2 $3 }
            | {- empty -} { AbsM.NoMoreParams }
 BasicDecl :: { BasicDecl }
-BasicDecl : TokenID BasicArrayDim ':' TokenID { AbsM.BasicDecl $1 $2 $4 }
+BasicDecl : TokenID ListBasicArrayDim ':' Type { AbsM.BasicDecl $1 (reverse $2) $4 }
 BasicArrayDim :: { BasicArrayDim }
-BasicArrayDim : '[' ']' BasicArrayDim { AbsM.BasicArrDim $3 }
-              | {- empty -} { AbsM.NoBasicArrDim }
+BasicArrayDim : '[' ']' { AbsM.basicArrDim_ }
+ListBasicArrayDim :: { [BasicArrayDim] }
+ListBasicArrayDim : {- empty -} { [] }
+                  | ListBasicArrayDim BasicArrayDim { flip (:) $1 $2 }
 ProgBody :: { ProgBody }
 ProgBody : 'begin' ProgStmts 'end' { AbsM.ProgStmtsBody $2 }
 FunBody :: { FunBody }
@@ -180,7 +183,7 @@ MulOp :: { MulOp }
 MulOp : '*' { AbsM.MMul } | '/' { AbsM.MDiv }
 IntFactor :: { IntFactor }
 IntFactor : '(' Expr ')' { AbsM.EnclosedExpr $2 }
-          | 'size' '(' TokenID BasicArrayDim ')' { AbsM.MSize $3 $4 }
+          | 'size' '(' TokenID ListBasicArrayDim ')' { AbsM.MSize $3 (reverse $4) }
           | 'float' '(' Expr ')' { AbsM.MFloat $3 }
           | 'floor' '(' Expr ')' { AbsM.MFloor $3 }
           | 'ceil' '(' Expr ')' { AbsM.MCeil $3 }

@@ -1,0 +1,150 @@
+comment "%";
+comment "/*" "*/";
+
+separator M_decl ";" ;
+
+token TokenID (letter (letter | digit | '_')*) ;
+token TokenReal ((digit)* '.' (digit)+) ;
+
+M_prog. M_prog ::= M_block;
+block. M_block ::= M_decls ProgBody;
+
+declDecls. M_decls ::= M_decl ";" M_decls;
+noDecls. M_decls ::= ;
+
+vardecl. M_decl ::= VarDecl;
+fundecl. M_decl ::= FunDecl;
+
+
+M_var. VarDecl ::= "var" TokenID ArrDim ":" M_type;
+
+
+M_int. M_type ::= "int";
+M_real. M_type ::= "real";
+M_bool. M_type ::= "bool";
+
+M_exprArrDim. ArrDim ::= "[" M_expr "]" ArrDim;
+noArrDim. ArrDim ::= ;
+
+M_fun. FunDecl ::= "fun" TokenID ParamList ":" TokenID "{" FunBlock "}";
+
+M_declFunBody. FunBlock ::= M_decls FunBody;
+
+
+M_paramList. ParamList ::= "(" Params ")";
+
+
+M_declMoreParams. Params ::= BasicDecl MoreParams;
+noParams. Params ::= ;
+
+
+
+M_commaDeclMoreParams. MoreParams ::= "," BasicDecl MoreParams;
+noMoreParams. MoreParams ::= ;
+
+
+M_basicDecl. BasicDecl ::= TokenID BasicArrayDim ":" TokenID;
+
+
+M_basicArrDim. BasicArrayDim ::= "[" "]" BasicArrayDim;
+noBasicArrDim. BasicArrayDim ::= ;
+
+
+M_progStmtsBody. ProgBody ::= "begin" ProgStmts "end";
+
+
+M_funMBody. FunBody ::= "begin" ProgStmts "return" M_expr ";" "end";
+
+
+M_progStmts. ProgStmts ::= M_stmt ";" ProgStmts;
+noProgStmts. ProgStmts ::= ;
+                                        
+
+M_cond. M_stmt ::= "if" M_expr "then" M_stmt "else" M_stmt;
+M_while. M_stmt ::= "while" M_expr "do" M_stmt;
+M_read. M_stmt ::= "read" Identifier;
+M_ass. M_stmt ::= Identifier ":=" M_expr;
+M_print. M_stmt ::= "print" M_expr;
+M_block. M_stmt ::= "{" M_block "}";
+
+
+M_id. Identifier ::= TokenID ArrDim;
+
+
+M_exprBintTerm. M_expr ::= M_expr "||" BintTerm;
+M_bintTerm. M_expr ::= BintTerm;
+
+
+M_bintTermBintFactor. BintTerm ::= BintTerm "&&" BintFact;
+M_bintFactor. BintTerm ::= BintFact;
+
+
+M_notBintFactor. BintFact ::= "not" BintFact;
+M_intECompareIntE. BintFact ::= IntExpr CompareOp IntExpr;
+M_intE. BintFact ::= IntExpr;
+
+
+M_eq. CompareOp ::= "=";
+M_lt. CompareOp ::= "<";
+M_gt. CompareOp ::= ">";
+M_le. CompareOp ::= "<=";
+M_ge. CompareOp ::= ">=";
+
+
+M_intEAddIntT. IntExpr ::= IntExpr AddOp IntTerm;
+M_intT. IntExpr ::= IntTerm;
+
+M_add. AddOp ::= "+";
+M_sub. AddOp ::= "-";
+
+
+M_intTMulIntF. IntTerm ::= IntTerm MulOp IntFactor;
+M_intF. IntTerm ::= IntFactor;
+
+coercions MulOp 2;
+_. MulOp ::= M_operation;
+
+M_enclosedExpr. IntFactor ::= "(" M_expr ")";
+M_size. IntFactor ::= "size" "(" TokenID BasicArrayDim ")";
+M_float. IntFactor ::= "float" "(" M_expr ")";
+M_floor. IntFactor ::= "floor" "(" M_expr ")";
+M_ceil. IntFactor ::= "ceil" "(" M_expr ")";
+M_id_modlist. IntFactor ::= TokenID ModifierList;
+M_ival. IntFactor ::= Integer ;
+M_rval. IntFactor ::= Double;
+M_bval. IntFactor ::= Mbool ;
+M_nval. IntFactor ::= "-" IntFactor;
+
+noTrue. Mbool ::= "true" ;
+noFalse. Mbool ::= "false" ;
+
+M_add. M_operation ::= "+";
+M_mul. M_operation ::= "*";
+M_div. M_operation ::= "/";
+M_sub. M_operation ::= "-";
+M_lt. M_operation ::= "<";
+M_le. M_operation ::= "<=";
+M_gt. M_operation ::= ">";
+M_ge. M_operation ::= ">=";
+M_not. M_operation ::= "not";
+M_and. M_operation ::= "&&";
+M_or. M_operation ::= "||";
+M_floor. M_operation ::= "floor"
+M_ceil. M_operation ::= "ceil"
+
+ | M_mul | M_sub | M_div | M_neg
+                 | M_lt | M_le | M_gt | M_ge | M_eq | M_not | M_and | M_or
+                 | M_float | M_floor | M_ceil
+
+M_enclosedArgs. ModifierList ::= "(" Args ")";
+M_arrDim. ModifierList ::= ArrDim;
+
+
+M_moreArgs. Args ::= M_expr MoreArgs;
+noArgs. Args ::= ;
+
+
+M_exprMoreArgs. MoreArgs ::= "," M_expr MoreArgs;
+noMoreArgs. MoreArgs ::= ;
+
+

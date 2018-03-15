@@ -1,0 +1,132 @@
+comment "%";
+comment "/*" "*/";
+
+
+token TokenID (letter (letter | digit | '_')*) ;
+token TokenReal ((digit)* '.' (digit)+) ;
+
+Prog. Prog ::= Block;
+Block. Block ::= Decls ProgBody;
+
+DeclDecls. Decls ::= Decl ";" Decls;
+NoDecls. Decls ::= ;
+
+VarDecl. Decl ::= VarDecl;
+FunDecl. Decl ::= FunDecl;
+
+
+MVar. VarDecl ::= "var" TokenID ArrDim ":" Type;
+
+
+MInt. Type ::= "int";
+MReal. Type ::= "real";
+MBool. Type ::= "bool";
+
+ExprArrDim. ArrDim ::= "[" Expr "]" ArrDim;
+NoArrDim. ArrDim ::= ;
+
+MFun. FunDecl ::= "fun" TokenID ParamList ":" Type "{" FunBlock "}";
+
+DeclFunBody. FunBlock ::= Decls FunBody;
+
+
+Params. ParamList ::= "(" Params ")";
+
+
+DeclMoreParams. Params ::= BasicDecl MoreParams;
+NoParams. Params ::= ;
+
+
+
+CommaDeclMoreParams. MoreParams ::= "," BasicDecl MoreParams;
+NoMoreParams. MoreParams ::= ;
+
+
+BasicDecl. BasicDecl ::= TokenID BasicArrayDim ":" TokenID;
+
+
+BasicArrDim. BasicArrayDim ::= "[" "]" BasicArrayDim;
+NoBasicArrDim. BasicArrayDim ::= ;
+
+
+ProgStmtsBody. ProgBody ::= "begin" ProgStmts "end";
+
+
+FunBody. FunBody ::= "begin" ProgStmts "return" Expr ";" "end";
+
+
+ProgStmts. ProgStmts ::= Stmt ";" ProgStmts;
+NoProgStmts. ProgStmts ::= ;
+                                        
+
+MCond. Stmt ::= "if" Expr "then" Stmt "else" Stmt;
+MWhile. Stmt ::= "while" Expr "do" Stmt;
+MRead. Stmt ::= "read" Identifier;
+MAss. Stmt ::= Identifier ":=" Expr;
+MPrint. Stmt ::= "print" Expr;
+MBlock. Stmt ::= "{" Block "}";
+
+
+MId. Identifier ::= TokenID ArrDim;
+
+
+ExprBintTerm. Expr ::= Expr "||" BintTerm;
+BintTerm. Expr ::= BintTerm;
+
+
+BintTermBintFactor. BintTerm ::= BintTerm "&&" BintFact;
+BintFactor. BintTerm ::= BintFact;
+
+
+NotBintFactor. BintFact ::= "not" BintFact;
+IntECompareIntE. BintFact ::= IntExpr CompareOp IntExpr;
+IntE. BintFact ::= IntExpr;
+
+
+MEq. CompareOp ::= "=";
+MLt. CompareOp ::= "<";
+MGt. CompareOp ::= ">";
+MLe. CompareOp ::= "<=";
+MGe. CompareOp ::= ">=";
+
+
+IntEAddIntT. IntExpr ::= IntExpr AddOp IntTerm;
+IntT. IntExpr ::= IntTerm;
+
+MAdd. AddOp ::= "+";
+MSub. AddOp ::= "-";
+
+
+IntTMulIntF. IntTerm ::= IntTerm MulOp IntFactor;
+IntF. IntTerm ::= IntFactor;
+
+MMul. MulOp ::= "*";
+MDiv. MulOp ::= "/";
+
+EnclosedExpr. IntFactor ::= "(" Expr ")";
+MSize. IntFactor ::= "size" "(" TokenID BasicArrayDim ")";
+MFloat. IntFactor ::= "float" "(" Expr ")";
+MFloor. IntFactor ::= "floor" "(" Expr ")";
+MCeil. IntFactor ::= "ceil" "(" Expr ")";
+Id_modlist. IntFactor ::= TokenID ModifierList;
+MIval. IntFactor ::= Integer ;
+MRval. IntFactor ::= Double;
+MBval. IntFactor ::= Mbool ;
+MNval. IntFactor ::= "-" IntFactor;
+
+NoTrue. Mbool ::= "true" ;
+NoFalse. Mbool ::= "false" ;
+
+
+EnclosedArgs. ModifierList ::= "(" Args ")";
+ArrDim. ModifierList ::= ArrDim;
+
+
+MoreArgs. Args ::= Expr MoreArgs;
+NoArgs. Args ::= ;
+
+
+ExprMoreArgs. MoreArgs ::= "," Expr MoreArgs;
+NoMoreArgs. MoreArgs ::= ;
+
+

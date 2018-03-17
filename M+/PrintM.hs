@@ -87,6 +87,10 @@ instance Print TokenReal where
   prt _ (TokenReal i) = doc (showString ( i))
 
 
+instance Print TokenInt where
+  prt _ (TokenInt i) = doc (showString ( i))
+
+
 
 instance Print Prog where
   prt i e = case e of
@@ -145,12 +149,17 @@ instance Print MoreParams where
 
 instance Print BasicDecl where
   prt i e = case e of
-    BasicDecl tokenid basicarraydims type_ -> prPrec i 0 (concatD [prt 0 tokenid, prt 0 basicarraydims, doc (showString ":"), prt 0 type_])
+    BasicDecl tokenid basicarraydim type_ -> prPrec i 0 (concatD [prt 0 tokenid, prt 0 basicarraydim, doc (showString ":"), prt 0 type_])
 
 instance Print BasicArrayDim where
   prt i e = case e of
-  prtList _ [] = (concatD [])
-  prtList _ (x:xs) = (concatD [prt 0 x, prt 0 xs])
+    BasicArrDim solidparen basicarraydim -> prPrec i 0 (concatD [prt 0 solidparen, prt 0 basicarraydim])
+    NoBasicArrDim -> prPrec i 0 (concatD [])
+
+instance Print SolidParen where
+  prt i e = case e of
+    SolidParen -> prPrec i 0 (concatD [doc (showString "["), doc (showString "]")])
+
 instance Print ProgBody where
   prt i e = case e of
     ProgStmtsBody progstmts -> prPrec i 0 (concatD [doc (showString "begin"), prt 0 progstmts, doc (showString "end")])
@@ -224,13 +233,13 @@ instance Print MulOp where
 instance Print IntFactor where
   prt i e = case e of
     EnclosedExpr expr -> prPrec i 0 (concatD [doc (showString "("), prt 0 expr, doc (showString ")")])
-    MSize tokenid basicarraydims -> prPrec i 0 (concatD [doc (showString "size"), doc (showString "("), prt 0 tokenid, prt 0 basicarraydims, doc (showString ")")])
+    MSize tokenid basicarraydim -> prPrec i 0 (concatD [doc (showString "size"), doc (showString "("), prt 0 tokenid, prt 0 basicarraydim, doc (showString ")")])
     MFloat expr -> prPrec i 0 (concatD [doc (showString "float"), doc (showString "("), prt 0 expr, doc (showString ")")])
     MFloor expr -> prPrec i 0 (concatD [doc (showString "floor"), doc (showString "("), prt 0 expr, doc (showString ")")])
     MCeil expr -> prPrec i 0 (concatD [doc (showString "ceil"), doc (showString "("), prt 0 expr, doc (showString ")")])
     Id_modlist tokenid modifierlist -> prPrec i 0 (concatD [prt 0 tokenid, prt 0 modifierlist])
-    MIval n -> prPrec i 0 (concatD [prt 0 n])
-    MRval d -> prPrec i 0 (concatD [prt 0 d])
+    MIval tokenint -> prPrec i 0 (concatD [prt 0 tokenint])
+    MRval tokenreal -> prPrec i 0 (concatD [prt 0 tokenreal])
     MBval mbool -> prPrec i 0 (concatD [prt 0 mbool])
     MNval intfactor -> prPrec i 0 (concatD [doc (showString "-"), prt 0 intfactor])
 

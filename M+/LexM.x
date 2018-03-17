@@ -31,12 +31,13 @@ $white+ ;
 @rsyms { tok (\p s -> PT p (eitherResIdent (TV . share) s)) }
 $l ($l | $d | \_)* { tok (\p s -> PT p (eitherResIdent (T_TokenID . share) s)) }
 $d * \. $d + { tok (\p s -> PT p (eitherResIdent (T_TokenReal . share) s)) }
+$d + { tok (\p s -> PT p (eitherResIdent (T_TokenInt . share) s)) }
 
 $l $i*   { tok (\p s -> PT p (eitherResIdent (TV . share) s)) }
 
 
-$d+      { tok (\p s -> PT p (TI $ share s))    }
-$d+ \. $d+ (e (\-)? $d+)? { tok (\p s -> PT p (TD $ share s)) }
+
+
 
 {
 
@@ -55,6 +56,7 @@ data Tok =
  | TC !String         -- character literals
  | T_TokenID !String
  | T_TokenReal !String
+ | T_TokenInt !String
 
  deriving (Eq,Show,Ord)
 
@@ -91,6 +93,7 @@ prToken t = case t of
   PT _ (TC s)   -> s
   PT _ (T_TokenID s) -> s
   PT _ (T_TokenReal s) -> s
+  PT _ (T_TokenInt s) -> s
 
 
 data BTree = N | B String Tok BTree BTree deriving (Show)

@@ -9,6 +9,7 @@ module AbsM where
 
 newtype TokenID = TokenID String deriving (Eq, Ord, Show, Read)
 newtype TokenReal = TokenReal String deriving (Eq, Ord, Show, Read)
+newtype TokenInt = TokenInt String deriving (Eq, Ord, Show, Read)
 data Prog = Prog Block
   deriving (Eq, Ord, Show, Read)
 
@@ -46,10 +47,14 @@ data MoreParams
     = CommaDeclMoreParams BasicDecl MoreParams | NoMoreParams
   deriving (Eq, Ord, Show, Read)
 
-data BasicDecl = BasicDecl TokenID [BasicArrayDim] Type
+data BasicDecl = BasicDecl TokenID BasicArrayDim Type
   deriving (Eq, Ord, Show, Read)
 
 data BasicArrayDim
+    = BasicArrDim SolidParen BasicArrayDim | NoBasicArrDim
+  deriving (Eq, Ord, Show, Read)
+
+data SolidParen = SolidParen
   deriving (Eq, Ord, Show, Read)
 
 data ProgBody = ProgStmtsBody ProgStmts
@@ -103,13 +108,13 @@ data MulOp = MMul | MDiv
 
 data IntFactor
     = EnclosedExpr Expr
-    | MSize TokenID [BasicArrayDim]
+    | MSize TokenID BasicArrayDim
     | MFloat Expr
     | MFloor Expr
     | MCeil Expr
     | Id_modlist TokenID ModifierList
-    | MIval Integer
-    | MRval Double
+    | MIval TokenInt
+    | MRval TokenReal
     | MBval Mbool
     | MNval IntFactor
   deriving (Eq, Ord, Show, Read)

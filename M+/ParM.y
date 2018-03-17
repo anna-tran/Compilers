@@ -22,7 +22,7 @@ import ErrM
 %name pMoreParams MoreParams
 %name pBasicDecl BasicDecl
 %name pBasicArrayDim BasicArrayDim
-%name pListBasicArrayDim ListBasicArrayDim
+%name pSolidParen SolidParen
 %name pProgBody ProgBody
 %name pFunBody FunBody
 %name pProgStmts ProgStmts
@@ -89,18 +89,16 @@ import ErrM
   '||' { PT _ (TS _ 42) }
   '}' { PT _ (TS _ 43) }
 
-L_integ  { PT _ (TI $$) }
-L_doubl  { PT _ (TD $$) }
 L_TokenID { PT _ (T_TokenID $$) }
 L_TokenReal { PT _ (T_TokenReal $$) }
+L_TokenInt { PT _ (T_TokenInt $$) }
 
 
 %%
 
-Integer :: { Integer } : L_integ  { (read ( $1)) :: Integer }
-Double  :: { Double }  : L_doubl  { (read ( $1)) :: Double }
 TokenID    :: { TokenID} : L_TokenID { TokenID ($1)}
 TokenReal    :: { TokenReal} : L_TokenReal { TokenReal ($1)}
+TokenInt    :: { TokenInt} : L_TokenInt { TokenInt ($1)}
 
 Prog :: { Prog }
 Prog : Block { AbsM.Prog $1 }
@@ -133,12 +131,12 @@ MoreParams :: { MoreParams }
 MoreParams : ',' BasicDecl MoreParams { AbsM.CommaDeclMoreParams $2 $3 }
            | {- empty -} { AbsM.NoMoreParams }
 BasicDecl :: { BasicDecl }
-BasicDecl : TokenID ListBasicArrayDim ':' Type { AbsM.BasicDecl $1 (reverse $2) $4 }
+BasicDecl : TokenID BasicArrayDim ':' Type { AbsM.BasicDecl $1 $2 $4 }
 BasicArrayDim :: { BasicArrayDim }
-BasicArrayDim : '[' ']' { AbsM.basicArrDim_ }
-ListBasicArrayDim :: { [BasicArrayDim] }
-ListBasicArrayDim : {- empty -} { [] }
-                  | ListBasicArrayDim BasicArrayDim { flip (:) $1 $2 }
+BasicArrayDim : SolidParen BasicArrayDim { AbsM.BasicArrDim $1 $2 }
+              | {- empty -} { AbsM.NoBasicArrDim }
+SolidParen :: { SolidParen }
+SolidParen : '[' ']' { AbsM.SolidParen }
 ProgBody :: { ProgBody }
 ProgBody : 'begin' ProgStmts 'end' { AbsM.ProgStmtsBody $2 }
 FunBody :: { FunBody }
@@ -183,13 +181,13 @@ MulOp :: { MulOp }
 MulOp : '*' { AbsM.MMul } | '/' { AbsM.MDiv }
 IntFactor :: { IntFactor }
 IntFactor : '(' Expr ')' { AbsM.EnclosedExpr $2 }
-          | 'size' '(' TokenID ListBasicArrayDim ')' { AbsM.MSize $3 (reverse $4) }
+          | 'size' '(' TokenID BasicArrayDim ')' { AbsM.MSize $3 $4 }
           | 'float' '(' Expr ')' { AbsM.MFloat $3 }
           | 'floor' '(' Expr ')' { AbsM.MFloor $3 }
           | 'ceil' '(' Expr ')' { AbsM.MCeil $3 }
           | TokenID ModifierList { AbsM.Id_modlist $1 $2 }
-          | Integer { AbsM.MIval $1 }
-          | Double { AbsM.MRval $1 }
+          | TokenInt { AbsM.MIval $1 }
+          | TokenReal { AbsM.MRval $1 }
           | Mbool { AbsM.MBval $1 }
           | '-' IntFactor { AbsM.MNval $2 }
 Mbool :: { Mbool }

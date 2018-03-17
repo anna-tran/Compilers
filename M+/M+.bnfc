@@ -4,6 +4,7 @@ comment "/*" "*/";
 
 token TokenID (letter (letter | digit | '_')*) ;
 token TokenReal ((digit)* '.' (digit)+) ;
+token TokenInt ((digit)+) ;
 
 Prog. Prog ::= Block;
 Block. Block ::= Decls ProgBody;
@@ -42,17 +43,12 @@ CommaDeclMoreParams. MoreParams ::= "," BasicDecl MoreParams;
 NoMoreParams. MoreParams ::= ;
 
 
-BasicDecl. BasicDecl ::= TokenID [BasicArrayDim] ":" Type;
+BasicDecl. BasicDecl ::= TokenID BasicArrayDim ":" Type;
 
-basicArrDim. BasicArrayDim ::= "[" "]" ;
-
-[]. [BasicArrayDim] ::= ;
-(:). [BasicArrayDim] ::= BasicArrayDim [BasicArrayDim] ;
-
-{-
-BasicArrDim. BasicArrayDim ::= "[" "]" BasicArrayDim;
+BasicArrDim. BasicArrayDim ::= SolidParen BasicArrayDim;
 NoBasicArrDim. BasicArrayDim ::= ;
--}
+
+SolidParen. SolidParen ::= "[" "]" ;
 
 
 
@@ -111,13 +107,13 @@ MMul. MulOp ::= "*";
 MDiv. MulOp ::= "/";
 
 EnclosedExpr. IntFactor ::= "(" Expr ")";
-MSize. IntFactor ::= "size" "(" TokenID [BasicArrayDim] ")";
+MSize. IntFactor ::= "size" "(" TokenID BasicArrayDim ")";
 MFloat. IntFactor ::= "float" "(" Expr ")";
 MFloor. IntFactor ::= "floor" "(" Expr ")";
 MCeil. IntFactor ::= "ceil" "(" Expr ")";
 Id_modlist. IntFactor ::= TokenID ModifierList;
-MIval. IntFactor ::= Integer ;
-MRval. IntFactor ::= Double;
+MIval. IntFactor ::= TokenInt ;
+MRval. IntFactor ::= TokenReal;
 MBval. IntFactor ::= Mbool ;
 MNval. IntFactor ::= "-" IntFactor;
 

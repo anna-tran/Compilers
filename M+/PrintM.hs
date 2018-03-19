@@ -207,7 +207,7 @@ instance Print CompareOp where
     MEq -> prPrec i 0 (concatD [doc (showString "=")])
     MLt -> prPrec i 0 (concatD [doc (showString "<")])
     MGt -> prPrec i 0 (concatD [doc (showString ">")])
-    MLe -> prPrec i 0 (concatD [doc (showString "<=")])
+    MLe -> prPrec i 0 (concatD [doc (showString "=<")])
     MGe -> prPrec i 0 (concatD [doc (showString ">=")])
 
 instance Print IntExpr where

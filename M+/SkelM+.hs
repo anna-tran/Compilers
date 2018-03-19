@@ -229,10 +229,9 @@ transIntFactor x = case x of
   MFloat expr -> A.M_app (A.M_float, [(transExpr expr)])
   MFloor expr -> A.M_app (A.M_floor, [(transExpr expr)])
   MCeil expr -> A.M_app (A.M_ceil, [(transExpr expr)])
-  Id_modlist tokenid modifierlist -> A.M_id (id, modList)
+  Id_modlist tokenid modifierlist -> transModifierList id modifierlist
                 where
-                    id = (transTokenID tokenid)
-                    modList = (transModifierList modifierlist)
+                  id = (transTokenID tokenid)
   MIval tokenint -> A.M_ival (transTokenInt tokenint)
   MRval tokenreal -> A.M_rval (transTokenReal tokenreal)
   MBval mbool -> A.M_bval (transMbool mbool)
@@ -246,10 +245,14 @@ transMbool x = case x of
   NoFalse -> False
 
 
-transModifierList :: ModifierList -> [A.M_expr]
-transModifierList x = case x of
-  EnclosedArgs args -> transArgs args
-  ArrDim arrdim -> transArrDim arrdim
+transModifierList :: String -> ModifierList -> A.M_expr
+transModifierList id x = case x of
+  EnclosedArgs args -> A.M_app ((A.M_fn id), exprs)
+                where
+                    exprs = (transArgs args)
+  ArrDim arrdim -> A.M_id (id, exprs)
+                where
+                    exprs = (transArrDim arrdim)
 
 transArgs :: Args -> [A.M_expr]
 transArgs x = case x of

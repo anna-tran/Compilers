@@ -1,6 +1,6 @@
 comment "%";
 comment "/*" "*/";
-
+entrypoints Prog;
 
 token TokenID (letter (letter | digit | '_')*) ;
 token TokenReal ((digit)* '.' (digit)+) ;
@@ -89,7 +89,7 @@ IntE. BintFact ::= IntExpr;
 MEq. CompareOp ::= "=";
 MLt. CompareOp ::= "<";
 MGt. CompareOp ::= ">";
-MLe. CompareOp ::= "<=";
+MLe. CompareOp ::= "=<";
 MGe. CompareOp ::= ">=";
 
 

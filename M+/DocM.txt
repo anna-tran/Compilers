@@ -41,7 +41,7 @@ The symbols used in M+ are the following:
   | ; | : | [ | ]
   | { | } | ( | )
   | , | := | || | &&
-  | = | < | > | <=
+  | = | < | > | =<
   | >= | + | - | *
   | / |  |  | 
 
@@ -98,7 +98,7 @@ All other symbols are terminals.
   | //CompareOp// | -> | ``=`` 
   |  |  **|**  | ``<`` 
   |  |  **|**  | ``>`` 
-  |  |  **|**  | ``<=`` 
+  |  |  **|**  | ``=<`` 
   |  |  **|**  | ``>=`` 
   | //IntExpr// | -> | //IntExpr// //AddOp// //IntTerm// 
   |  |  **|**  | //IntTerm// 

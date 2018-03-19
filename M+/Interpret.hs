@@ -14,10 +14,59 @@ import AbsM
 import AstM as A
 import ErrM
 
-main = do
-  interact interpM
-  putStrLn ""
+-- main = do
+--   interact interpM
+--   putStrLn ""
 
-interpM s = 
-  let Ok tree = pProg (myLexer s)
-  in show (transProg tree)
+-- interpM s = 
+  -- let Ok tree = pProg (myLexer s)
+  -- in show (transProg tree)
+type ParseFun a = [Token] -> Err a
+
+myLLexer = myLexer
+
+type Verbosity = Int
+
+putStrV :: Verbosity -> String -> IO ()
+putStrV v s = if v > 1 then putStrLn s else return ()
+
+runFile :: Verbosity -> FilePath -> IO ()
+runFile v f = putStrLn f >> readFile f >>= run v 
+
+run :: Verbosity -> String -> IO ()
+run v s = let ts = (myLLexer s) in case (pProg ts) of
+           Bad s    -> do putStrLn "\nParse Failed...\n"
+                          putStrV v "Tokens:"
+                          putStrV v $ show ts
+                          putStrLn s
+                          exitFailure
+           Ok  tree -> do putStrLn $  "\nParse Successful!\n"
+                          -- putStrLn $ show (transProg tree)
+                          putStrLn $ ("\n[Abstract Syntax]\n\n" ++ show (transProg tree))
+                          putStrV v $ ("\n[Linearized tree]\n\n" ++ printTree tree)
+                          exitSuccess
+
+
+
+usage :: IO ()
+usage = do
+  putStrLn $ unlines
+    [ "usage: Call with one of the following argument combinations:"
+    , "  --help          Display this help message."
+    , "  (no arguments)  Parse stdin verbosely."
+    , "  (files)         Parse content of files verbosely."
+    , "  -s (files)      Silent mode. Parse content of files silently."
+    ]
+  exitFailure
+
+main :: IO ()
+main = do
+  args <- getArgs
+  case args of
+    ["--help"] -> usage
+    [] -> hGetContents stdin >>= run 2
+    "-s":fs -> mapM_ (runFile 0) fs
+    fs -> mapM_ (runFile 2) fs
+
+
+                          

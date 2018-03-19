@@ -9,38 +9,6 @@ import ErrM
 }
 
 %name pProg Prog
-%name pBlock Block
-%name pDecls Decls
-%name pDecl Decl
-%name pVarDecl VarDecl
-%name pType Type
-%name pArrDim ArrDim
-%name pFunDecl FunDecl
-%name pFunBlock FunBlock
-%name pParamList ParamList
-%name pParams Params
-%name pMoreParams MoreParams
-%name pBasicDecl BasicDecl
-%name pBasicArrayDim BasicArrayDim
-%name pSolidParen SolidParen
-%name pProgBody ProgBody
-%name pFunBody FunBody
-%name pProgStmts ProgStmts
-%name pStmt Stmt
-%name pIdentifier Identifier
-%name pExpr Expr
-%name pBintTerm BintTerm
-%name pBintFact BintFact
-%name pCompareOp CompareOp
-%name pIntExpr IntExpr
-%name pAddOp AddOp
-%name pIntTerm IntTerm
-%name pMulOp MulOp
-%name pIntFactor IntFactor
-%name pMbool Mbool
-%name pModifierList ModifierList
-%name pArgs Args
-%name pMoreArgs MoreArgs
 -- no lexer declaration
 %monad { Err } { thenM } { returnM }
 %tokentype {Token}
@@ -57,8 +25,8 @@ import ErrM
   ':=' { PT _ (TS _ 10) }
   ';' { PT _ (TS _ 11) }
   '<' { PT _ (TS _ 12) }
-  '<=' { PT _ (TS _ 13) }
-  '=' { PT _ (TS _ 14) }
+  '=' { PT _ (TS _ 13) }
+  '=<' { PT _ (TS _ 14) }
   '>' { PT _ (TS _ 15) }
   '>=' { PT _ (TS _ 16) }
   '[' { PT _ (TS _ 17) }
@@ -167,7 +135,7 @@ CompareOp :: { CompareOp }
 CompareOp : '=' { AbsM.MEq }
           | '<' { AbsM.MLt }
           | '>' { AbsM.MGt }
-          | '<=' { AbsM.MLe }
+          | '=<' { AbsM.MLe }
           | '>=' { AbsM.MGe }
 IntExpr :: { IntExpr }
 IntExpr : IntExpr AddOp IntTerm { AbsM.IntEAddIntT $1 $2 $3 }

@@ -1,5 +1,5 @@
 comment "%";
-comment "/*" "*/";
+
 entrypoints Prog;
 
 token TokenID (letter (letter | digit | '_')*) ;

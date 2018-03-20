@@ -21,6 +21,31 @@ import ErrM
 -- interpM s = 
   -- let Ok tree = pProg (myLexer s)
   -- in show (transProg tree)
+comment :: [LexM.Token] -> Int -> [LexM.Token]
+comment [] 0 = []
+
+comment (t1@(PT pos1 _):t2@(PT pos2 _):ts) n
+    | str1 == "/" && str2 == "*"                = case ts of
+                                                    [] -> [Err pos1]
+                                                    _ -> comment ts (n+1)
+    | str1 == "*" && str2 == "/" 
+        && ((n <= 0) || (ts == [] && n > 0))    = [Err pos1]
+    | str1 == "*" && str2 == "/"                = comment ts (n-1)
+    | n > 0                                     = comment (t2:ts) n
+    | n == 0                                    = t1:(comment (t2:ts) n)
+    where
+        str1 = prToken t1
+        str2 = prToken t2
+
+comment [t@(PT pos tok)] n
+    | n > 0 || n < 0        = [Err pos]
+    | otherwise             = [t]        
+
+hasErr :: [LexM.Token] -> Bool
+hasErr [] = False
+hasErr (Err p:ts) = True
+hasErr (t:ts) = hasErr ts
+
 type ParseFun a = [Token] -> Err a
 
 myLLexer = myLexer
@@ -34,11 +59,14 @@ runFile :: Verbosity -> FilePath -> IO ()
 runFile v f = putStrLn f >> readFile f >>= run v 
 
 run :: Verbosity -> String -> IO ()
-run v s = let ts = (myLLexer s) in case (pProg ts) of
+run v s =                               
+    let ts = (comment (myLLexer s) 0) in case (pProg ts) of
            Bad s    -> do putStrLn "\nParse Failed...\n"
                           putStrV v "Tokens:"
                           putStrV v $ show ts
-                          putStrLn s
+                          if (hasErr ts)
+                            then putStrLn $ "Unbalanced comments at " ++ (show (tokenPosn (last ts)))
+                            else putStrLn s
                           exitFailure
            Ok  tree -> do putStrLn $  "\nParse Successful!\n"
                           -- putStrLn $ show (transProg tree)

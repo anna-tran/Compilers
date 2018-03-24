@@ -59,8 +59,10 @@ runFile :: Verbosity -> FilePath -> IO ()
 runFile v f = putStrLn f >> readFile f >>= run v 
 
 run :: Verbosity -> String -> IO ()
-run v s =                               
-    let ts = (comment (myLLexer s) 0) in case (pProg ts) of
+run v s = do
+    -- putStrLn $ show $ myLLexer s                              
+    -- let ts = (comment (myLLexer s) 0) in case (pProg ts) of
+    let ts = myLLexer s in case (pProg ts) of
            Bad s    -> do putStrLn "\nParse Failed...\n"
                           putStrV v "Tokens:"
                           putStrV v $ show ts

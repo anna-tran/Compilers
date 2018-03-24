@@ -4,7 +4,7 @@ This program is a lexer and parser for the M+ language. It takes in an M+ progra
 1. Failed lex or parse
 	* prints out a "Parse failed" message
 	* prints out the list of tokens it was able to lex
-	* prints out the line where the syntax error occurred
+	* prints out the error message
 
 2. Successful lex and parse
 	* prints out a "Parse successful" message

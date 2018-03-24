@@ -235,7 +235,7 @@ transIntFactor x = case x of
   MIval tokenint -> A.M_ival (transTokenInt tokenint)
   MRval tokenreal -> A.M_rval (transTokenReal tokenreal)
   MBval mbool -> A.M_bval (transMbool mbool)
-  MNval intfactor -> A.M_app (A.M_sub, [intf])
+  MNval intfactor -> A.M_app (A.M_neg, [intf])
                 where 
                     intf = transIntFactor intfactor
 

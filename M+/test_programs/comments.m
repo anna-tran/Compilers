@@ -1,7 +1,7 @@
 % abc /*
 /* %abc */
 /* */
-aff
+aff $$$
 */
 
 var i:int;

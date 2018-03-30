@@ -11,16 +11,12 @@ import ParM
 import SkelM
 import PrintM
 import AbsM
-import AstM as A
+import AstM
 import ErrM
+import SymbolTable
+import SymbolTypes
+import Wff
 
--- main = do
---   interact interpM
---   putStrLn ""
-
--- interpM s = 
-  -- let Ok tree = pProg (myLexer s)
-  -- in show (transProg tree)
 comment :: [LexM.Token] -> Int -> [LexM.Token]
 comment [] 0 = []
 
@@ -59,22 +55,28 @@ runFile :: Verbosity -> FilePath -> IO ()
 runFile v f = putStrLn f >> readFile f >>= run v 
 
 run :: Verbosity -> String -> IO ()
-run v s = do
-    -- putStrLn $ show $ myLLexer s                              
-    -- let ts = (comment (myLLexer s) 0) in case (pProg ts) of
-    let ts = myLLexer s in case (pProg ts) of
-           Bad s    -> do putStrLn "\nParse Failed...\n"
-                          putStrV v "Tokens:"
-                          putStrV v $ show ts
-                          if (hasErr ts)
-                            then putStrLn $ "Unbalanced comments at " ++ (show (tokenPosn (last ts)))
-                            else putStrLn s
-                          exitFailure
-           Ok  tree -> do putStrLn $  "\nParse Successful!\n"
-                          -- putStrLn $ show (transProg tree)
-                          putStrLn $ ("\n[Abstract Syntax]\n\n" ++ show (transProg tree))
-                          putStrV v $ ("\n[Linearized tree]\n\n" ++ printTree tree)
-                          exitSuccess
+run v s = let ts = myLLexer s in case (pProg ts) of
+            Bad s   ->  do 
+                        putStrLn $ "\nParse Failed...\n"
+                        putStrV v "Tokens:"
+                        putStrV v $ show ts
+                        putStrLn s
+                        exitFailure
+            Ok tree ->  do 
+                        putStrLn $ "\nParse Successful!\n"
+                        let ast = transProg tree
+                        putStrLn $ ("\n[Abstract Syntax]\n\n" ++ (show ast))
+                        putStrV v $ ("\n[Linearized tree]\n\n" ++ printTree tree)
+                        let sf = wff_prog ast
+                        -- putStrLn $ show (isSS (SS 3))
+                        if (isSS sf)
+                            then putStrLn $ "Compiled successfully"
+                            else do
+                                putStrLn $ "\nFailed to compile...\n"
+                                putStrLn $ fromFF sf
+                        -- let (lNum,st) = addProgSymtable ast
+ --                       putStrLn $ STypes.showSTList st
+                        exitSuccess
 
 
 

@@ -1,5 +1,5 @@
 
-module AstM where
+module AstMMod where
 
 data M_prog = M_prog ([M_decl],[M_stmt])
 data M_decl = M_var (String,[M_expr],M_type)

@@ -41,9 +41,9 @@ data I_expr = IINT      Int
 	         --   isize(<level>,<offset>,<which dimension>)
 	    	 --   level and offset identify which array the last integer 
 		     --   tells you which dimension you want to look at!!
-data I_opn = ICALL      (String,Int)
+data I_opn = ICALL (String,Int)
            | IADD_F | IMUL_F | ISUB_F | IDIV_F | INEG_F
            | ILT_F  | ILE_F  | IGT_F  | IGE_F  | IEQ_F   -- operations for floats
            | IADD | IMUL | ISUB | IDIV | INEG
            | ILT  | ILE  | IGT  | IGE  | IEQ 
-           | INOT | IAND | IOR | IFLOAT | ICEIL |IFLOOR;
+           | INOT | IAND | IOR | IFLOAT | ICEIL |IFLOOR

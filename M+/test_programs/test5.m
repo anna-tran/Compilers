@@ -1,11 +1,12 @@
 var x[2]:int;
 fun f(i:int):bool {
     var valid:bool;
+    var x:bool;
     begin
         if i >= 2 || i =< 0
             then valid := true
-        else valid := false;
-        return valid;
+        else x := false;
+        return valid && x;
     end
 };
 begin

@@ -6,6 +6,7 @@ import AstM
 import WffHelper
 import Data.Maybe
 
+
 allwff_decl :: Int -> ST -> [M_decl] -> SF (Int,ST)
 allwff_decl lNum st [] = SS (lNum,st)
 allwff_decl lNum st (d:ds) = sf
@@ -19,10 +20,6 @@ allwff_decl lNum st (d:ds) = sf
             False -> FF $ fromFF sf1 ++ fromFF sf2
 
 
--- allwff_expr :: ST -> [M_expr] -> SF Bool
--- allwff_expr _ [] = SS True
--- allwff_expr
--- allwff_expr st ss = foldr (\x acc -> let (b,_) = wff_expr st x in b && acc) True ss
 
 allwff_stmt :: Int -> ST -> [M_stmt] -> SF Int
 allwff_stmt lNum st [] = SS lNum
@@ -53,7 +50,68 @@ allMIntExpr st es = foldr (\x acc ->
             let mt = fromSS sf1
                 b = isMInt mt
             in b && acc
-        else False) True es        
+        else False) True es   
+        
+
+stepIntoAllFunc :: Int -> ST -> [M_decl] -> SF (Int,ST)
+stepIntoAllFunc lNum st [] = SS (lNum,st)
+stepIntoAllFunc lNum st (d:ds) = sf
+    where
+        sf1 = stepIntoFunc lNum st d
+        sf = if (isSS sf1)
+                then let (lNum',st') = fromSS sf1 in stepIntoAllFunc lNum' st' ds 
+                else FF $ fromFF sf1
+        
+
+stepIntoFunc :: Int -> ST -> M_decl -> SF (Int,ST)
+stepIntoFunc lNum st (M_var _) = SS (lNum,st)
+stepIntoFunc lNum st (M_fun (id,args,retType,decls,stmts)) = sf    
+    where
+        -- create new temp scope
+        st0 = newScope (L_FUN retType) st
+        -- inserts args
+        insArgs = map crArgument args
+        (lNum1,st1) = allwff_func_args lNum st0 insArgs
+        -- inserts decls
+        sf1 = allwff_decl lNum1 st1 decls
+        -- check each of the func decls
+        sf2 = if (isSS sf1)
+                then let (lNum',st') = fromSS sf1 in stepIntoAllFunc lNum' st' decls
+                else FF $ ""
+        -- insert stmts
+        sf3 = if (isSS sf2)
+                then let (lNum',st') = fromSS sf2 in allwff_stmt lNum' st' stmts 
+                else FF $ ""
+        sf = if ((isSS sf1) && (isSS sf2) && (isSS sf3))
+                then let    
+                    (lNum',st') = fromSS sf2
+                    -- delete temp scope
+                    st'' = delete st'
+                    in SS (lNum',st'')
+                else FF $ fromFF sf1 ++ fromFF sf2 ++ fromFF sf3
+                
+
+
+evalwff_exprs :: ST -> [M_expr] -> SF [M_type]
+evalwff_exprs st [] = SS []
+evalwff_exprs st [e] = sf
+    where
+        sf1 = wff_expr st e
+        sf = if (isSS sf1)
+                then let mt = fromSS sf1 in SS [mt]
+                else FF $ fromFF sf1
+evalwff_exprs st (e:es) = sf
+    where
+        sf1 = wff_expr st e 
+        sf2 = evalwff_exprs st es 
+        sf = if (isSS sf1) && (isSS sf2)
+                then 
+                    let
+                        mt = fromSS sf1
+                        mts = fromSS sf2
+                    in SS (mt:mts)
+                else FF $ fromFF sf1 ++ fromFF sf2
+                                
 
 wff_prog :: M_prog -> SF Bool 
 wff_prog (M_prog (ds,ss)) = sf
@@ -128,44 +186,6 @@ insertIfNotLevel s lNum st (M_fun (id,args,retType,decls,stmts)) level = sf
         sf = SS (insert lNum st (FUNCTION (id,iFuncArgs,retType)))
 
 
-stepIntoAllFunc :: Int -> ST -> [M_decl] -> SF (Int,ST)
-stepIntoAllFunc lNum st [] = SS (lNum,st)
-stepIntoAllFunc lNum st (d:ds) = sf
-    where
-        sf1 = stepIntoFunc lNum st d
-        sf = if (isSS sf1)
-                then let (lNum',st') = fromSS sf1 in stepIntoAllFunc lNum' st' ds 
-                else FF $ fromFF sf1
-        
-
-stepIntoFunc :: Int -> ST -> M_decl -> SF (Int,ST)
-stepIntoFunc lNum st (M_var _) = SS (lNum,st)
-stepIntoFunc lNum st (M_fun (id,args,retType,decls,stmts)) = sf    
-    where
-        -- create new temp scope
-        st0 = newScope (L_FUN retType) st
-        -- inserts args
-        insArgs = map crArgument args
-        (lNum1,st1) = allwff_func_args lNum st0 insArgs
-        -- inserts decls
-        sf1 = allwff_decl lNum1 st1 decls
-        -- check each of the func decls
-        sf2 = if (isSS sf1)
-                then let (lNum',st') = fromSS sf1 in stepIntoAllFunc lNum' st' decls
-                else FF $ ""
-        -- insert stmts
-        sf3 = if (isSS sf2)
-                then let (lNum',st') = fromSS sf2 in allwff_stmt lNum' st' stmts 
-                else FF $ ""
-        sf = if ((isSS sf1) && (isSS sf2) && (isSS sf3))
-                then let    
-                    (lNum',st') = fromSS sf2
-                    -- delete temp scope
-                    st'' = delete st'
-                    in SS (lNum',st'')
-                else FF $ fromFF sf1 ++ fromFF sf2 ++ fromFF sf3
-
-
 
 
 
@@ -185,12 +205,12 @@ wff_stmt lNum st (M_ass (id,dims,e)) =
             I_VARIABLE y    -> sf
                 where
                     mt1 = getLookupType x
-                    b = withinDims x dims
+                    b = exactDims x dims
                     sf1 = wff_expr st e
                     mMt = sameMtype (SS mt1) sf1
                     sf = if (b && (isSS sf1) && (isJust mMt))
                             then SS lNum
-                            else FF $ "M_ass: Invalid dimensions for " ++ show id ++ "\n" ++ fromFF sf1
+                            else FF $ "M_ass: Invalid assignment for " ++ show id ++ "\n" ++ fromFF sf1
             otherwise       -> FF $ "M_ass: Cannot assign to a function " ++ show id ++ "\n" --(False,lNum)
 
 wff_stmt lNum st (M_while (e,s)) = sf
@@ -227,7 +247,7 @@ wff_stmt lNum st (M_read (id,dims)) =
         Just x  -> case x of
             I_VARIABLE y    -> sf
                 where
-                    b1 = withinDims x dims 
+                    b1 = exactDims x dims 
                     b2 = allMIntExpr st dims 
                     sf = if b1 && b2
                         then SS lNum
@@ -319,25 +339,6 @@ wff_expr st (M_app (op,es)) = sf
 
                 else FF $ fromFF sf1 ++ fromFF sf2
 
-evalwff_exprs :: ST -> [M_expr] -> SF [M_type]
-evalwff_exprs st [] = SS []
-evalwff_exprs st [e] = sf
-    where
-        sf1 = wff_expr st e
-        sf = if (isSS sf1)
-                then let mt = fromSS sf1 in SS [mt]
-                else FF $ fromFF sf1
-evalwff_exprs st (e:es) = sf
-    where
-        sf1 = wff_expr st e 
-        sf2 = evalwff_exprs st es 
-        sf = if (isSS sf1) && (isSS sf2)
-                then 
-                    let
-                        mt = fromSS sf1
-                        mts = fromSS sf2
-                    in SS (mt:mts)
-                else FF $ fromFF sf1 ++ fromFF sf2
 
 
 

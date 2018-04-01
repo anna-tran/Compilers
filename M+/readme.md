@@ -10,6 +10,11 @@ This program is a lexer and parser for the M+ language. It takes in an M+ progra
 	* prints out a "Parse successful" message
 	* prints out the abstract syntax tree for the given M+ program
 
+## Note
+* Allow arrays to be accessed by any indice at compile time because some array
+  dimension sizes may not be known until runtime.
+* Allow variables of the same name to be declared in different scopes.
+
 # Compilation
 
 1. Run the makefile (with all .hs files in the current directory) using

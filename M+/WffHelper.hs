@@ -4,7 +4,12 @@ import SymbolTypes
 import SymbolTable
 import AstM
 import Data.Maybe
+ 
 
+
+
+
+        
 
 
 getLookupType :: SYM_I_DESC -> M_type
@@ -27,30 +32,12 @@ withinDims (I_VARIABLE(level,offset,mtype,dim)) es = b
         b = n >= 0 && n <= dim
 withinDims x es = False
 
-
--- getOpType :: ST -> M_operation -> [M_expr] -> [M_type] -> M_type
--- getOpType st op es expectedT
---     | op `elem` [M_add , M_mul , M_sub , M_div , M_neg]
---         && b
---         && mt `elem` expectedT
---         = mt
---     | b && mt `elem` expectedT
---         = mt
---     | otherwise = error $ "Operation " ++ (show op) ++ " cannot be applied to given arguments"
---     where
---         (b,mt) = sameMtypeL st es
-
--- sameMtypeL :: ST -> [M_expr] -> (Bool,M_type)
--- sameMtypeL st [] = (False,M_int)
--- sameMtypeL st [x] = (b,mt)
---     where
---         (b,mt) = wff_expr st x
--- sameMtypeL st (e:es) = (b,mt)
---     where
---         (b1,mt1) = wff_expr st e 
---         (b2,mt2) = sameMtypeL es 
---         (b3,mt) = sameMtype mt1 mt2
---         b = b1 && b2 && b3
+exactDims :: SYM_I_DESC -> [M_expr] -> Bool
+exactDims (I_VARIABLE(level,offset,mtype,dim)) es = b
+    where
+        n = length es
+        b = n == dim
+exactDims x es = False
 
 sameMtype :: SF M_type -> SF M_type -> Maybe M_type
 sameMtype (SS x) (SS y)
@@ -58,23 +45,6 @@ sameMtype (SS x) (SS y)
     | otherwise     = Nothing
 sameMtype ff1 ff2   = Nothing
 
-getFFErr (FF e1) (FF e2)    = FF $ e1 ++ "\n" ++ e2
-getFFErr ff@(FF _) _        = ff
-getFFErr _ ff@(FF _)        = ff
-
-get3FFErr (FF e1) (FF e2) (FF e3)    = FF $ e1 ++ "\n" ++ e2 ++ "\n" ++ e3
-get3FFErr (FF e1) (FF e2) _          = FF $ e1 ++ "\n" ++ e2
-get3FFErr _ (FF e1) (FF e2)          = FF $ e1 ++ "\n" ++ e2
-get3FFErr (FF e1) _ (FF e2)          = FF $ e1 ++ "\n" ++ e2
-get3FFErr ff@(FF _) _ _              = ff
-get3FFErr _ ff@(FF _) _              = ff
-get3FFErr _ _ ff@(FF _)              = ff
-
-checkSS (SS _) (SS _) = True
-checkSS _ _ = False
-
-check3SS (SS _) (SS _) (SS _) = True
-check3SS _ _ _ = False
 
 isMBool :: M_type -> Bool
 isMBool (M_bool) = True
@@ -83,11 +53,6 @@ isMBool x = False
 isMInt :: M_type -> Bool
 isMInt (M_int) = True
 isMInt x = False
-
--- declToSymDesc :: M_decl -> SYM_DESC
--- declToSymDesc (M_var (id,dims,mtype)) = VARIABLE (id,mtype,length dims)
--- declToSymDesc (M_fun (id,args,retType,decls,stmts)) = FUNCTION (id,args,retType)
-
 
 crArgument :: (String,Int,M_type) -> SYM_DESC
 crArgument (id,nDims,mtype) = ARGUMENT (id,mtype,nDims)

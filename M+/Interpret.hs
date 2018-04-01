@@ -67,12 +67,15 @@ run v s = let ts = myLLexer s in case (pProg ts) of
                         let ast = transProg tree
                         putStrLn $ ("\n[Abstract Syntax]\n\n" ++ (show ast))
                         putStrV v $ ("\n[Linearized tree]\n\n" ++ printTree tree)
-                        let sf = wff_prog ast
-                        if (isSS sf)
-                            then putStrLn $ "Compiled successfully"
+                        let sfiprog = wff_prog ast
+                        if (isSS sfiprog)
+                            then do 
+                                putStrLn $ "\nCompiled successfully!\n"
+                                putStrLn $ "\n[Intermediate representation]\n\n"
+                                putStrLn $ show sfiprog
                             else do
                                 putStrLn $ "\nFailed to compile...\n"
-                                putStrLn $ fromFF sf
+                                putStrLn $ fromFF sfiprog
                         -- let (lNum,st) = addProgSymtable ast
  --                       putStrLn $ STypes.showSTList st
                         exitSuccess

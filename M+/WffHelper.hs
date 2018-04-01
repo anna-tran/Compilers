@@ -4,7 +4,7 @@ import SymbolTypes
 import SymbolTable
 import AstM
 import Data.Maybe
- 
+import IR 
 
 
 
@@ -39,7 +39,7 @@ exactDims (I_VARIABLE(level,offset,mtype,dim)) es = b
         b = n == dim
 exactDims x es = False
 
-sameMtype :: M_Type -> SF (M_type,a) -> Maybe M_type
+sameMtype :: M_type -> SF (M_type,a) -> Maybe M_type
 sameMtype x (SS (y,_))
     | x == y        = Just x
     | otherwise     = Nothing
@@ -111,3 +111,45 @@ allSameMtype (m:ms) = sf
                 then SS m
                 else FF $ "Not of the same type: " ++ (show m) ++ ", " ++ (show mt) ++ "\n"
             else sf1
+
+
+
+crEmptyIProg :: I_prog
+crEmptyIProg = IPROG ([],0,[],[])
+
+
+
+
+
+trIOpn :: ST -> M_operation -> M_type -> I_opn
+trIOpn st (M_fn id) _ = ICALL (label,level)
+    where
+        (I_FUNCTION(level,label,argTypes,mtype)) = fromJust $ lookUp st id
+trIOpn _ (M_add) M_int = IADD
+trIOpn _ (M_add) M_real = IADD_F
+trIOpn _ (M_sub) M_int = ISUB
+trIOpn _ (M_sub) M_real = ISUB_F
+trIOpn _ (M_mul) M_int = IMUL
+trIOpn _ (M_mul) M_real = IMUL_F
+trIOpn _ (M_div) M_int = IDIV
+trIOpn _ (M_div) M_real = IDIV_F
+trIOpn _ (M_neg) M_int = INEG
+trIOpn _ (M_neg) M_real = INEG_F
+trIOpn _ (M_lt) M_int = ILT
+trIOpn _ (M_lt) M_real = ILT_F
+trIOpn _ (M_le) M_int = ILE
+trIOpn _ (M_le) M_real = ILE_F
+trIOpn _ (M_gt) M_int = IGT
+trIOpn _ (M_gt) M_real = IGT_F
+trIOpn _ (M_ge) M_int = IGE
+trIOpn _ (M_ge) M_real = IGE_F
+trIOpn _ (M_eq) M_int = IEQ
+trIOpn _ (M_eq) M_real = IEQ_F
+trIOpn _ (M_not)    _ = INOT
+trIOpn _ (M_and)    _ = IAND
+trIOpn _ (M_or)     _ = IOR
+trIOpn _ (M_float)  _ = IFLOAT
+trIOpn _ (M_floor)  _ = IFLOOR
+trIOpn _ (M_ceil)   _ = ICEIL
+trIOpn _ op mt = error $ "Cannot produce an I_opn " ++ show op ++ " with type " ++ show mt
+

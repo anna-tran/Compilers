@@ -4,7 +4,8 @@ fun f(b:real):real
       begin if x[2] = 0.0 then z:= 1.0
             else z:= x[1] * 2.0;
       return z;
-      end};
+ 
+     end};
 begin
     x[0] := 4.0; 
     read x[1];

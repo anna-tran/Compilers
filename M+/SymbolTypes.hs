@@ -32,7 +32,7 @@ type ST = [SYM_TABLE]
 
 data SF a = SS a 
           | FF String
-          deriving (Eq,Read,Show)
+          deriving (Eq,Ord,Read,Show)
           
 isSS :: SF a -> Bool
 isSS (SS x) = True

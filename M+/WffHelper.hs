@@ -39,11 +39,11 @@ exactDims (I_VARIABLE(level,offset,mtype,dim)) es = b
         b = n == dim
 exactDims x es = False
 
-sameMtype :: SF M_type -> SF M_type -> Maybe M_type
-sameMtype (SS x) (SS y)
+sameMtype :: M_Type -> SF (M_type,a) -> Maybe M_type
+sameMtype x (SS (y,_))
     | x == y        = Just x
     | otherwise     = Nothing
-sameMtype ff1 ff2   = Nothing
+sameMtype x ff   = Nothing
 
 
 isMBool :: M_type -> Bool
@@ -60,7 +60,7 @@ crArgument (id,nDims,mtype) = ARGUMENT (id,mtype,nDims)
 
 
 findInDecls :: [M_decl] -> String -> M_decl
-findInDecls [] id = error $ "Could not find declaration " ++ (show id)
+findInDecls [] id = error $ "Could not find declaration " ++ (show id) ++ "\n"
 findInDecls (d@(M_var (id',_,_)):ds) id
     | id' == id = d 
     | otherwise = findInDecls ds id 
@@ -79,10 +79,10 @@ getMtypeFromArgs ((mt,i):rest) = mt : (getMtypeFromArgs rest)
 lookupReturnType :: ST -> M_operation -> [M_type] -> SF M_type
 lookupReturnType st (M_fn s) mts =
     case lookUp st s of
-        Nothing -> FF $ "No existant declaration for function " ++ show s
+        Nothing -> FF $ "No existant declaration for function " ++ show s ++ "\n"
         Just x -> case x of 
             I_FUNCTION(_,_,_,mtype) -> SS mtype
-            otherwise -> FF $ "Cannot get return type of a variable " ++ show s
+            otherwise -> FF $ "Cannot get return type of a variable " ++ show s ++ "\n"
 
 lookupReturnType st op mts 
     | op `elem` [M_lt , M_le , M_gt , M_ge , M_eq , M_and , M_or , M_not] 
@@ -94,7 +94,7 @@ lookupReturnType st op mts
             then SS M_real
             else sfm    
     | op `elem` [M_add , M_mul , M_sub , M_div , M_neg] = sfm         
-    | otherwise = FF $ "Operation " ++ (show op) ++ " does not exist"
+    | otherwise = FF $ "Operation " ++ (show op) ++ " does not exist\n"
     where
         sfm = allSameMtype mts
 
@@ -109,5 +109,5 @@ allSameMtype (m:ms) = sf
             then let mt = fromSS sf1 in
                 if mt == m
                 then SS m
-                else FF $ "Not of the same type: " ++ (show m) ++ ", " ++ (show mt)
+                else FF $ "Not of the same type: " ++ (show m) ++ ", " ++ (show mt) ++ "\n"
             else sf1

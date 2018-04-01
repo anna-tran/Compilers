@@ -17,55 +17,15 @@ trIFbody st (M_fun (id,args,retType,decls,stmts)) =
 
 data I_fbody = IFUN     (String,[I_fbody],Int,Int,[(Int,[I_expr])],[I_stmt])
     -- a function node consists of 
-    --   (a) the label given to the function
+-    --   (a) the label given to the function
     --   (b) the list of local functions declared
     --   (c) the number of local variables
-    --   (d) the number of arguments
+-    --   (d) the number of arguments
     --   (c) a list of array specifications (<offset>,<list of bounds>)
-    --   (d) the body: a list of statements
+-    --   (d) the body: a list of statements
 
 
 trIStmt :: ST -> M_stmt -> M_type -> I_stmt
-trIStmt st (M_ass (id,dims,e)) _ = IASS (level,offset,indices,ie)
-    where
-        (I_VARIABLE (level,offset,mtype,dim)) = lookUp st id
-        indices = map (trIExpr st) dims
-        ie = trIExpr st e 
-trIStmt st (M_while (e,s)) _ = IWHILE (ie,is)
-    where
-        ie = trIExpr st e 
-        is = trIStmt st s
-trIStmt st (M_cond (e,s1,s2)) _ = ICOND (ie,is1,is2)
-    where 
-        ie = trIExpr st e 
-        is1 = trIStmt st s1
-        is2 = trIStmt st s2
-        
-
-trIStmt st (M_read e) mtype = 
-    case e of 
-        (M_id (id,es)) -> case mtype of 
-            M_int -> IREAD_I (level,offset,ies)
-            M_real -> IREAD_F (level,offset,ies)
-            M_bool -> IREAD_B (level,offset,ies)
-            where
-                (I_VARIABLE (level,offset,mtype',dim)) = lookUp st id
-                ies = map (trIExpr st) es???????
-
-        otherwise -> error $ "Cannot read from anything other than an id"
-
-trIStmt st (M_print e) mtype =
-    case mtype of 
-        M_int -> IPRINT_I ie
-        M_real -> IPRINT_F ie
-        M_bool -> IPRINT_B ie
-        where
-            ie = trIExpr e    
-
-trIStmt st (M_return e) _ = ie
-    where
-        ie = trIExpr e
-
 trIStmt st (M_block (ds,ss)) _ = IBLOCK (fbodies,nVar,arrDecs,is)
     where
         fbodies = map (trIFbody st) ds 
@@ -97,7 +57,7 @@ trIExpr st (M_size (id,n))  = ISIZE (level,offset,n)
 trIExpr st (M_id (id,es))   = IID (level,offset,indices)
     where
         (I_VARIABLE (level,offset,mtype,dim)) = lookUp st id
-        indices = mapM (trIExpr v) es
+        indices = mapM (trIExpr st) es
 -- pass to this a list of one M_expr -- The expected return type from the operation
 trIExpr st (M_app (op,es))   = IAPP (iopn,ies)
     where
@@ -115,7 +75,7 @@ trMType (M_bval b) = M_bool
 
 
 trIOpn :: ST -> M_operation -> M_type -> I_opn
-trIOpn (M_fn id) _ = ICALL (label,level)
+trIOpn st (M_fn id) _ = ICALL (label,level)
     where
         (I_FUNCTION(level,label,argTypes,mtype)) = lookUp st id
 trIOpn _ (M_add) M_int = IADD

@@ -47,3 +47,7 @@ data I_opn = ICALL (String,Int)
            | IADD | IMUL | ISUB | IDIV | INEG
            | ILT  | ILE  | IGT  | IGE  | IEQ 
            | INOT | IAND | IOR | IFLOAT | ICEIL |IFLOOR
+
+type I_var = (Int,[(Int,[I_expr])])
+    --   (a) the number of local variables
+    --   (b) a list of array specifications (<offset>,<list of bounds>)

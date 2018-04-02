@@ -72,7 +72,7 @@ run v s = let ts = myLLexer s in case (pProg ts) of
                             then do 
                                 putStrLn $ "\nCompiled successfully!\n"
                                 putStrLn $ "\n[Intermediate representation]\n\n"
-                                putStrLn $ show sfiprog
+                                putStrLn $ show (fromSS sfiprog)
                             else do
                                 putStrLn $ "\nFailed to compile...\n"
                                 putStrLn $ fromFF sfiprog

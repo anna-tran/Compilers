@@ -89,9 +89,13 @@ lookupReturnType st op mts
         = if (isSS sfm)
             then SS M_bool
             else sfm
-    | op `elem` [M_float , M_floor , M_ceil]
+    | op `elem` [M_float]
         = if (isSS sfm)
             then SS M_real
+            else sfm
+    | op `elem` [M_floor , M_ceil]
+        = if (isSS sfm)
+            then SS M_int
             else sfm    
     | op `elem` [M_add , M_mul , M_sub , M_div , M_neg] = sfm         
     | otherwise = FF $ "Operation " ++ (show op) ++ " does not exist\n"

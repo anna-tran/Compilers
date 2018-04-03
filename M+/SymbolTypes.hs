@@ -44,6 +44,7 @@ isFF (SS x) = False
 
 fromSS :: SF a -> a
 fromSS (SS x) = x
+fromSS (FF s) = error $ s
 fromFF :: (Show a) => SF a -> String
 fromFF (FF s) = s
 fromFF x = ""

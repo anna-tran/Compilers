@@ -76,7 +76,7 @@ getMtypeFromArgs :: [(M_type,Int)] -> [M_type]
 getMtypeFromArgs [] = []
 getMtypeFromArgs ((mt,i):rest) = mt : (getMtypeFromArgs rest)
 
-lookupReturnType :: ST -> M_operation -> [M_type] -> SF M_type
+lookupReturnType :: ST -> M_operation -> [(M_type,Int)] -> SF M_type
 lookupReturnType st (M_fn s) mts =
     case lookUp st s of
         Nothing -> FF $ "No existant declaration for function " ++ show s ++ "\n"
@@ -103,10 +103,10 @@ lookupReturnType st op mts
         sfm = allSameMtype mts
 
 
-allSameMtype :: [M_type] -> SF M_type
+allSameMtype :: [(M_type,Int)] -> SF M_type
 allSameMtype [] = FF $ "No M_type given!"
-allSameMtype [m] = SS m
-allSameMtype (m:ms) = sf
+allSameMtype [(m,d)] = SS m
+allSameMtype ((m,d):ms) = sf
     where
         sf1 = allSameMtype ms
         sf = if (isSS sf1)

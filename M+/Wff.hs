@@ -8,13 +8,13 @@ import Data.Maybe
 import IR
 
 -- returns (label num, symtable, # local vars, var array dimensions)
-allwff_decl :: Int -> ST -> [M_decl] -> SF (Int,ST,Int,[(Int,[I_expr])])
-allwff_decl lNum st [] = SS (lNum,st,0,[])
-allwff_decl lNum st (d:ds) = sf
+allWffDecl :: Int -> ST -> [M_decl] -> SF (Int,ST,Int,[(Int,[I_expr])])
+allWffDecl lNum st [] = SS (lNum,st,0,[])
+allWffDecl lNum st (d:ds) = sf
     where
-        sf1 = wff_decl lNum st d
+        sf1 = wffDecl lNum st d
         sf2 = if (isSS sf1) 
-                then let (lNum1,st1,_,_) = fromSS sf1 in allwff_decl lNum1 st1 ds
+                then let (lNum1,st1,_,_) = fromSS sf1 in allWffDecl lNum1 st1 ds
                 else FF $ ""
         sf = if (isSS sf1) && (isSS sf2)
                 then let
@@ -26,13 +26,13 @@ allwff_decl lNum st (d:ds) = sf
 
 
 
-allwff_stmt :: Int -> ST -> [M_stmt] -> SF (Int,[I_stmt])
-allwff_stmt lNum st [] = SS (lNum,[])
-allwff_stmt lNum st (s:ss) = sf
+allWffStmt :: Int -> ST -> [M_stmt] -> SF (Int,[I_stmt])
+allWffStmt lNum st [] = SS (lNum,[])
+allWffStmt lNum st (s:ss) = sf
     where
-        sf1 = wff_stmt lNum st s
+        sf1 = wffStmt lNum st s
         sf2 = if (isSS sf1)
-            then let (lNum',_) = fromSS sf1 in allwff_stmt lNum' st ss
+            then let (lNum',_) = fromSS sf1 in allWffStmt lNum' st ss
             else FF ""
         sf = if ((isSS sf1) && (isSS sf2))
             then let
@@ -42,16 +42,16 @@ allwff_stmt lNum st (s:ss) = sf
             else FF $ fromFF sf1 ++ fromFF sf2
     
     
-allwff_func_args :: Int -> ST -> [SYM_DESC] -> (Int,ST)
-allwff_func_args lNum st [] = (lNum,st)
-allwff_func_args lNum st (arg:args) = (lNum2,st2)
+allWffFuncArgs :: Int -> ST -> [SYM_DESC] -> (Int,ST)
+allWffFuncArgs lNum st [] = (lNum,st)
+allWffFuncArgs lNum st (arg:args) = (lNum2,st2)
     where
         (lNum1,st1) = insert lNum st arg
-        (lNum2,st2) = allwff_func_args lNum1 st1 args
+        (lNum2,st2) = allWffFuncArgs lNum1 st1 args
 
 allMIntExpr :: ST -> [M_expr] -> Bool
 allMIntExpr st es = foldr (\x acc -> 
-    let sf1 = wff_expr st x in
+    let sf1 = wffExpr st x in
         if (isSS sf1)
         then let 
                 (mt,_) = fromSS sf1
@@ -86,16 +86,16 @@ stepIntoFunc lNum st (M_fun (id,args,retType,decls,stmts)) = sf
         st0 = newScope (L_FUN retType) st
         -- inserts args
         insArgs = map crArgument args
-        (lNum1,st1) = allwff_func_args lNum st0 insArgs
+        (lNum1,st1) = allWffFuncArgs lNum st0 insArgs
         -- inserts decls
-        sf1 = allwff_decl lNum1 st1 decls
+        sf1 = allWffDecl lNum1 st1 decls
         -- check each of the func decls
         sf2 = if (isSS sf1)
                 then let (lNum',st',_,_) = fromSS sf1 in stepIntoAllFunc lNum' st' decls
                 else FF $ ""
         -- insert stmts
         sf3 = if (isSS sf2)
-                then let (lNum',st',_) = fromSS sf2 in allwff_stmt lNum' st' stmts 
+                then let (lNum',st',_) = fromSS sf2 in allWffStmt lNum' st' stmts 
                 else FF $ ""
         sf = if (isSS sf1) && (isSS sf2) && (isSS sf3)
                 then let
@@ -112,21 +112,21 @@ stepIntoFunc lNum st (M_fun (id,args,retType,decls,stmts)) = sf
 
 
                                 
-wff_prog :: M_prog -> SF (I_prog)
-wff_prog (M_prog (ds,ss)) = sf
+wffProg :: M_prog -> SF (I_prog)
+wffProg (M_prog (ds,ss)) = sf
     where 
         iprog = crEmptyIProg
         et = empty
         st = newScope L_PROG et 
         -- insert all decls prematurely
-        sf1 = allwff_decl 0 st ds
+        sf1 = allWffDecl 0 st ds
         -- go into each of the fun decls
         sf2 = if (isSS sf1)
             then let (lNum',st',_,_) = fromSS sf1 in stepIntoAllFunc lNum' st' ds
             else FF $ ""
         -- insert all of the stmts
         sf3 = if (isSS sf2)
-            then let (lNum',st',_) = fromSS sf2 in allwff_stmt lNum' st' ss
+            then let (lNum',st',_) = fromSS sf2 in allWffStmt lNum' st' ss
             else FF $ ""
         sf = if ((isSS sf1) && (isSS sf2) && (isSS sf3))
             then let
@@ -142,8 +142,8 @@ wff_prog (M_prog (ds,ss)) = sf
             
 -- 1 make sure it has not been declared in current scope
 -- 2 make sure that all dims are expr of type int
-wff_decl :: Int -> ST -> M_decl -> SF (Int,ST,Int,[(Int,[I_expr])])
-wff_decl lNum st mv@(M_var (id,dims,mt)) =
+wffDecl :: Int -> ST -> M_decl -> SF (Int,ST,Int,[(Int,[I_expr])])
+wffDecl lNum st mv@(M_var (id,dims,mt)) =
     case lookUp st id of
         Nothing -> sf
             where 
@@ -159,7 +159,7 @@ wff_decl lNum st mv@(M_var (id,dims,mt)) =
 
 
 --  make sure it has not been declared in current scope
-wff_decl lNum st mf@(M_fun (id,args,retType,decls,stmts)) = 
+wffDecl lNum st mf@(M_fun (id,args,retType,decls,stmts)) = 
     case lookUp st id of
         Nothing -> sf
             where
@@ -211,8 +211,8 @@ insertIfNotLevel lNum st (M_fun (id,args,retType,decls,stmts)) level = sf
 
 
 
-wff_stmt :: Int -> ST -> M_stmt -> SF (Int,I_stmt)
-wff_stmt lNum st (M_ass (id,dims,e)) = 
+wffStmt :: Int -> ST -> M_stmt -> SF (Int,I_stmt)
+wffStmt lNum st (M_ass (id,dims,e)) = 
     case lookUp st id of
         Nothing -> FF $ "ERROR in assignment: No existant declaration for " ++ show id ++ "\n"
         Just x  -> case x of
@@ -220,7 +220,7 @@ wff_stmt lNum st (M_ass (id,dims,e)) =
                 where
                     mt1 = getLookupType x
                     b = exactDims x dims
-                    sf1 = wff_expr st e
+                    sf1 = wffExpr st e
                     sf2 = if (isSS sf1)
                         then trIExprs st dims
                         else FF ""
@@ -231,7 +231,7 @@ wff_stmt lNum st (M_ass (id,dims,e)) =
                                                             (_,ie) = fromSS sf1
                                                             indices = fromSS sf2
                                                             in SS (lNum, IASS (level,offset,indices,ie))
-                                | not b4                   = FF $ "ERROR in assignment: Cannot assign type " ++ show (fst (fromSS sf1)) ++ " to " ++ show id ++ " of type " ++ show mt1 ++ "\n"
+                                | not b4 && b1          = FF $ "ERROR in assignment: Cannot assign type " ++ show (fst (fromSS sf1)) ++ " to " ++ show id ++ " of type " ++ show mt1 ++ "\n"
                                 | not b1                   = FF $ "ERROR in assignment: Invalid dimensions for " ++ show id ++ "\n"
                                 | otherwise             = FF $ fromFF sf1 ++ fromFF sf2
                     
@@ -246,13 +246,13 @@ wff_stmt lNum st (M_ass (id,dims,e)) =
 
 
 
-wff_stmt lNum st (M_while (e,s)) = sf
+wffStmt lNum st (M_while (e,s)) = sf
     where
-        sfe = wff_expr st e 
+        sfe = wffExpr st e 
         b = if (isSS sfe)
             then let (mt,_) = fromSS sfe in isMBool mt
             else False
-        sfs = wff_stmt lNum st s
+        sfs = wffStmt lNum st s
         sf = if (b && (isSS sfe) && (isSS sfs))
             then let
                 (_,ie) = fromSS sfe
@@ -262,25 +262,25 @@ wff_stmt lNum st (M_while (e,s)) = sf
 
 
 
-wff_stmt lNum st (M_cond (e,s1,s2)) = sf
+wffStmt lNum st (M_cond (e,s1,s2)) = sf
     where
-        sfe1 = wff_expr st e 
+        sfe1 = wffExpr st e 
         b = if (isSS sfe1)
             then let (mt,_) = fromSS sfe1 in isMBool mt
             else False
-        sfs1 = wff_stmt lNum st s1 
+        sfs1 = wffStmt lNum st s1 
         sfs2 = if (isSS sfs1)
-            then let (lNum1,_) = fromSS sfs1 in wff_stmt lNum1 st s2
+            then let (lNum1,_) = fromSS sfs1 in wffStmt lNum1 st s2
             else FF $ ""
-        sf = getRetSF b (isSS sfs1) (isSS sfs2)
-            where getRetSF b1 b2 b3 
-                    | b1 && b2 && b3   = let
-                                            (_,ie) = fromSS sfe1
-                                            (_,is1) = fromSS sfs1
-                                            (lNum2,is2) = fromSS sfs2
-                                            in SS (lNum2,ICOND (ie,is1,is2))
-                    | not b1              = FF $ "ERROR in conditonal: The conditional expression must be of type boolean but is of type " ++ show (fst (fromSS sfe1)) ++ "\n"
-                    | otherwise        = FF $ fromFF sfe1 ++ fromFF sfs1 ++ fromFF sfs2
+        sf = getRetSF b (isSS sfe1) (isSS sfs1) (isSS sfs2)
+            where getRetSF b1 b2 b3 b4
+                    | b1 && b2 && b3 && b4  = let
+                                                (_,ie) = fromSS sfe1
+                                                (_,is1) = fromSS sfs1
+                                                (lNum2,is2) = fromSS sfs2
+                                                in SS (lNum2,ICOND (ie,is1,is2))
+                    | not b1                = FF $ "ERROR in conditonal: The conditional expression must be of type boolean but is of type " ++ show (fst (fromSS sfe1)) ++ "\n"
+                    | otherwise             = FF $ fromFF sfe1 ++ fromFF sfs1 ++ fromFF sfs2
                 
             --     (b && (isSS sfs1) && (isSS sfs2))
             -- then let 
@@ -292,7 +292,7 @@ wff_stmt lNum st (M_cond (e,s1,s2)) = sf
 
     
 
-wff_stmt lNum st (M_read (id,dims)) =
+wffStmt lNum st (M_read (id,dims)) =
     case lookUp st id of
         Nothing -> FF $ "ERROR in read: No existant declaration for " ++ show id ++ "\n"
         Just x  -> case x of
@@ -323,9 +323,9 @@ wff_stmt lNum st (M_read (id,dims)) =
 
 
 
-wff_stmt lNum st (M_print e) = sf
+wffStmt lNum st (M_print e) = sf
     where
-        sf1 = wff_expr st e 
+        sf1 = wffExpr st e 
         sf = if (isSS sf1)
             then let  
                 (mtype,ie) = fromSS sf1
@@ -335,9 +335,9 @@ wff_stmt lNum st (M_print e) = sf
                     M_bool -> (SS (lNum,IPRINT_B ie))
             else FF $ fromFF sf1         
 
-wff_stmt lNum st (M_return e) = sf
+wffStmt lNum st (M_return e) = sf
     where
-        sf1 = wff_expr st e
+        sf1 = wffExpr st e
         mt = stReturn st
         mMt = sameMtype mt sf1
         sf = getRetSF (isSS sf1) (isJust mMt)
@@ -358,17 +358,17 @@ wff_stmt lNum st (M_return e) = sf
                     FF _ -> FF $ fromFF sf1 -}
                 
 
-wff_stmt lNum st (M_block (ds,ss)) = sf
+wffStmt lNum st (M_block (ds,ss)) = sf
     where
         st0 = newScope L_BLK st
-        sf1 = allwff_decl lNum st0 ds
+        sf1 = allWffDecl lNum st0 ds
         sf2 = if (isSS sf1)
             then let (lNum',st',_,_) = fromSS sf1 in stepIntoAllFunc lNum' st' ds
             else FF ""
-        sf3 = if (isSS sf2)
-            then let (lNum',st',_,_) = fromSS sf1 in allwff_stmt lNum' st' ss 
+        sf3 = if (isSS sf2) && (isSS sf1)
+            then let (lNum',st',_,_) = fromSS sf1 in allWffStmt lNum' st' ss 
             else FF ""
-        sf = if (isSS sf1) && (isSS sf2)
+        sf = if (isSS sf1) && (isSS sf2) && (isSS sf3)
             then let
                 (_,_,nVar,iArrDims) = fromSS sf1
                 (_,_,iFbodies) = fromSS sf2
@@ -381,7 +381,7 @@ trIExprs :: ST -> [M_expr] -> SF [I_expr]
 trIExprs st [] = SS []
 trIExprs st (e:es) = sf
     where
-        sf1 = wff_expr st e
+        sf1 = wffExpr st e
         sf2 = trIExprs st es
         sf = if (isSS sf1) && (isSS sf2)
                 then let
@@ -391,11 +391,11 @@ trIExprs st (e:es) = sf
                 else FF $ fromFF sf1 ++ fromFF sf2
 
 
-wff_expr :: ST -> M_expr -> SF (M_type,I_expr)
-wff_expr st (M_ival n) = SS (M_int, IINT (fromIntegral n))
-wff_expr st (M_rval n) = SS (M_real,IREAL n)
-wff_expr st (M_bval b) = SS (M_bool,IBOOL b)
-wff_expr st (M_size (s,n)) = 
+wffExpr :: ST -> M_expr -> SF (M_type,I_expr)
+wffExpr st (M_ival n) = SS (M_int, IINT (fromIntegral n))
+wffExpr st (M_rval n) = SS (M_real,IREAL n)
+wffExpr st (M_bval b) = SS (M_bool,IBOOL b)
+wffExpr st (M_size (s,n)) = 
     case lookUp st s of
         Nothing     -> FF $ "ERROR in size: No existant declaration for " ++ show s ++ "\n"
         Just x      -> case x of
@@ -404,7 +404,7 @@ wff_expr st (M_size (s,n)) =
                                 then SS (M_int, ISIZE (level,offset,n+1)) --3rd arg is the dimension number to look at, +1 from the number of dimensions given
                                 else FF $ "ERROR in size: Cannot access dimension " ++ show (n+1) ++" for a variable " ++ show s ++ " with " ++ show dim ++ " dimensions\n"
             otherwise       -> FF $ "ERROR in size: Cannot get size of a variable " ++ show s ++ "\n"
-wff_expr st (M_id (s,es)) = 
+wffExpr st (M_id (s,es)) = 
     case lookUp st s of
         Nothing -> FF $ "ERROR with identifier: No existant declaration for " ++ s ++ "\n"
         Just x  -> case x of
@@ -422,66 +422,76 @@ wff_expr st (M_id (s,es)) =
             otherwise       -> FF $ "ERROR with identifier: Cannot perform ID on a function " ++ show s ++ "\n"
 
             
-wff_expr st (M_app (op,es)) = sf
+wffExpr st (M_app (op,es)) = sf
     where
-        sf1 = wff_op st op
+        sf1 = wffOp st op
         -- make sure all expressions for the operation are of the same type
         -- if it's a function make sure it takes the right number of parameters
-        sf2 = evalwff_exprs st es
+        sf2 = evalwffExprs st es
         sf = if (isSS sf1) && (isSS sf2)
                 then let
-                        retTypes    = fromSS sf1
-                        eTypes      = fromSS sf2
-                        sfmtype     = lookupReturnType st op eTypes
-                        sfies       = trIExprs st es
-                        in if (eTypes `elem` retTypes && (isSS sfmtype) && (isSS sfies))
+                    -- need to check that dimensions of arguments to function are matching
+                        expectedTypes   = fromSS sf1
+                        exprTypes       = fromSS sf2
+                        sfmtype         = lookupReturnType st op exprTypes
+                        sfies           = trIExprs st es
+                        in 
+                            if (exprTypes `elem` expectedTypes && (isSS sfmtype) && (isSS sfies))
                             then let
                                 mt  = fromSS sfmtype
                                 ies = fromSS sfies
-                                iop = trIOpn st op (head eTypes)
+                                iop = trIOpn st op (fst (head exprTypes))
                                 in SS (mt,IAPP (iop,ies))
-                            else FF $ "ERROR with operation: Cannot apply " ++ (show op) ++ " to arguments of type " ++ show eTypes ++ "\n" ++ fromFF sfmtype
+                            else FF $ "ERROR with operation: Invalid arguments to " ++ show op ++ "\n\tGot " ++ show exprTypes ++ "\n\tExpected one of " ++ show expectedTypes ++ "\n"
 
                 else FF $ fromFF sf1 ++ fromFF sf2
 
 
-
-evalwff_exprs :: ST -> [M_expr] -> SF [M_type]
-evalwff_exprs st [] = SS []
-evalwff_exprs st [e] = sf
+-- return a list of (m_type,num dimensions for the expr)
+evalwffExprs :: ST -> [M_expr] -> SF [(M_type,Int)]
+evalwffExprs st [] = SS []
+evalwffExprs st (e@(M_id (s,arrDims)):es) = sf
     where
-        sf1 = wff_expr st e
-        sf = if (isSS sf1)
-                then let (mt,_) = fromSS sf1 in SS [mt]
-                else FF $ fromFF sf1
-evalwff_exprs st (e:es) = sf
-    where
-        sf1 = wff_expr st e 
-        sf2 = evalwff_exprs st es 
+        sf1 = wffExpr st e 
+        sf2 = evalwffExprs st es 
         sf = if (isSS sf1) && (isSS sf2)
                 then 
                     let
                         (mt,_) = fromSS sf1
                         mts = fromSS sf2
-                    in SS (mt:mts)
+                        (I_VARIABLE(level,offset,mtype,nDim)) = fromJust $ lookUp st s
+                        nArrDims = nDim - (length arrDims)
+                    in SS ((mt,nArrDims):mts)
+                else FF $ fromFF sf1 ++ fromFF sf2    
+
+evalwffExprs st (e:es) = sf
+    where
+        sf1 = wffExpr st e 
+        sf2 = evalwffExprs st es 
+        sf = if (isSS sf1) && (isSS sf2)
+                then 
+                    let
+                        (mt,_) = fromSS sf1
+                        mts = fromSS sf2
+                    in SS ((mt,0):mts)
                 else FF $ fromFF sf1 ++ fromFF sf2
 
 
 
-wff_op :: ST -> M_operation -> SF [[M_type]]
-wff_op st (M_fn s) = 
+wffOp :: ST -> M_operation -> SF [[(M_type,Int)]]
+wffOp st (M_fn s) = 
     case lookUp st s of
         Nothing -> FF $ "ERROR with operation: No existant declaration for function " ++ show s ++ "\n"
         Just x  -> case x of 
-            I_FUNCTION(level,label,args,retType)    ->  SS [(getMtypeFromArgs args)]
+            I_FUNCTION(level,label,args,retType)    ->  SS [args]
             otherwise                               ->  FF $ "ERROR with operation: Cannot call a variable " ++ show s ++ "\n"
-wff_op st op
+wffOp st op
     | op `elem` [M_lt , M_le , M_gt , M_ge , M_eq , M_add , M_mul , M_sub , M_div , M_neg]                     
-                                                                            = SS [[M_int,M_int],[M_real,M_real]]
-    | op `elem` [M_and , M_or]                                              = SS [[M_bool,M_bool]]
-    | op `elem` [M_not]                                                     = SS [[M_bool]]
-    | op `elem` [M_float]                                                   = SS [[M_int]]
-    | op `elem` [M_floor , M_ceil]                                          = SS [[M_real]]
+                                                                            = SS [[(M_int,0),(M_int,0)],[(M_real,0),(M_real,0)]]
+    | op `elem` [M_and , M_or]                                              = SS [[(M_bool,0),(M_bool,0)]]
+    | op `elem` [M_not]                                                     = SS [[(M_bool,0)]]
+    | op `elem` [M_float]                                                   = SS [[(M_int,0)],[(M_real,0)]]
+    | op `elem` [M_floor , M_ceil]                                          = SS [[(M_real,0)]]
     | otherwise                                                             = FF $ "ERROR with operation: " ++ (show op) ++ " does not exist" ++ "\n"
 
 

@@ -67,7 +67,7 @@ run v s = let ts = myLLexer s in case (pProg ts) of
                         let ast = transProg tree
                         putStrLn $ ("\n[Abstract Syntax]\n\n" ++ (show ast))
                         putStrV v $ ("\n[Linearized tree]\n\n" ++ printTree tree)
-                        let sfiprog = wff_prog ast
+                        let sfiprog = wffProg ast
                         if (isSS sfiprog)
                             then do 
                                 putStrLn $ "\nCompiled successfully!\n"

@@ -11,6 +11,6 @@ begin
     else x := 1;
 
     if (size(x) = size(y))
-        then read(x)
-    else read(y);
+        then read x
+    else read y;
 end

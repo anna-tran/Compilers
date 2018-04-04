@@ -157,3 +157,9 @@ trIOpn _ (M_floor)  _ = IFLOOR
 trIOpn _ (M_ceil)   _ = ICEIL
 trIOpn _ op mt = error $ "Cannot produce an I_opn " ++ show op ++ " with type " ++ show mt
 
+getM_idID :: M_expr -> String
+getM_idID (M_id (id,dims)) = id
+getM_idID x = error $ "Cannot get id from expression " ++ show x
+getM_idDims :: M_expr -> [M_expr]
+getM_idDims (M_id (id,dims)) = dims
+getM_idDims x = error $ "Cannot get dimensions from expression " ++ show x

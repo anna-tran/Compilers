@@ -1,7 +1,9 @@
-var x[2]:int;
+var x[2][3]:int;
 var y[2]:int;
+var z[1][1]:int;
 begin
-    if size (x) = size (y)
-        then read x[0]
-    else read y[1];
+    x[1] := y;
+    x := z;
+    x[1][1] := y[2];
+%    x := y;
 end

@@ -219,11 +219,22 @@ wffStmt lNum st (M_ass (id,dims,e)) =
             I_VARIABLE (level,offset,mtype,dim) -> sf
                 where
                     mt1 = getLookupType x
-                    b = exactDims x dims
                     sf1 = wffExpr st e
+                    b   = if (isSS sf1) 
+                            && case e of 
+                                M_id yy -> True
+                                otherwise -> False
+                            then let 
+                                I_VARIABLE (level1,offset1,mtype1,dim1) = fromJust $ lookUp st (getM_idID e)
+                                dims1 = getM_idDims e
+                                in (dim - length dims) == (dim1 - length dims1)
+                            -- M_id (idID,dimsID) -> length dimsID == (dim - length dims)
+                            -- otherwise           -> exactDims x dims
+                            else exactDims x dims
+                   
                     sf2 = if (isSS sf1)
-                        then trIExprs st dims
-                        else FF ""
+                            then trIExprs st dims
+                            else FF ""
                     mMt = sameMtype mt1 sf1
                     sf = getRetSF b (isSS sf1) (isSS sf2) (isJust mMt)
                         where getRetSF b1 b2 b3 b4
@@ -232,7 +243,7 @@ wffStmt lNum st (M_ass (id,dims,e)) =
                                                             indices = fromSS sf2
                                                             in SS (lNum, IASS (level,offset,indices,ie))
                                 | not b4 && b1          = FF $ "ERROR in assignment: Cannot assign type " ++ show (fst (fromSS sf1)) ++ " to " ++ show id ++ " of type " ++ show mt1 ++ "\n"
-                                | not b1                   = FF $ "ERROR in assignment: Invalid dimensions for " ++ show id ++ "\n"
+                                | not b1                = FF $ "ERROR in assignment: Invalid dimensions for " ++ show id ++ "\n"
                                 | otherwise             = FF $ fromFF sf1 ++ fromFF sf2
                     
                     

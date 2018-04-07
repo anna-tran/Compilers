@@ -1,3 +1,6 @@
+/*
+    Should report error that we cannot apply add to a float and a bool.
+*/
 var x[2]:real;     
 var y:bool; 
 fun f(b:real):real
@@ -11,5 +14,5 @@ begin
     x[0] := 4.0; 
     read x[1];
     print f((y+x[0]));
-    x[0] := float(2);
+    x[0] := float(3);
 end

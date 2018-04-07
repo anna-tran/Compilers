@@ -1,5 +1,5 @@
-module Wff where
-    
+module Wff where 
+
 import SymbolTypes
 import SymbolTable
 import AstM
@@ -84,19 +84,27 @@ stepIntoFunc lNum st (M_fun (id,args,retType,decls,stmts)) = sf
     where
         -- create new temp scope
         st0 = newScope (L_FUN retType) st
-        -- inserts args
+        --
+        -- *** allWffArgs ***
+        --
         insArgs = map crArgument args
         (lNum1,st1) = allWffFuncArgs lNum st0 insArgs
-        -- inserts decls
+        --
+        -- *** allWffDecl ***
+        --
         sf1 = allWffDecl lNum1 st1 decls
-        -- check each of the func decls
         sf2 = if (isSS sf1)
                 then let (lNum',st',_,_) = fromSS sf1 in stepIntoAllFunc lNum' st' decls
                 else FF $ ""
-        -- insert stmts
+        --
+        -- *** allWffStmt ***
+        --
         sf3 = if (isSS sf2)
                 then let (lNum',st',_) = fromSS sf2 in allWffStmt lNum' st' stmts 
                 else FF $ ""
+        --
+        -- *** makeFbody ***
+        --                
         sf = if (isSS sf1) && (isSS sf2) && (isSS sf3)
                 then let
                     nArg = length argTypes
@@ -118,16 +126,22 @@ wffProg (M_prog (ds,ss)) = sf
         iprog = crEmptyIProg
         et = empty
         st = newScope L_PROG et 
-        -- insert all decls prematurely
+        --
+        -- *** allWffDecl ***
+        --
         sf1 = allWffDecl 0 st ds
-        -- go into each of the fun decls
         sf2 = if (isSS sf1)
             then let (lNum',st',_,_) = fromSS sf1 in stepIntoAllFunc lNum' st' ds
             else FF $ ""
-        -- insert all of the stmts
+        --
+        -- *** allWffStmt ***
+        --
         sf3 = if (isSS sf2)
             then let (lNum',st',_) = fromSS sf2 in allWffStmt lNum' st' ss
             else FF $ ""
+        --
+        -- *** makeIProg ***
+        --
         sf = if ((isSS sf1) && (isSS sf2) && (isSS sf3))
             then let
                 (_,_,nVar,iArrDims) = fromSS sf1
@@ -144,12 +158,14 @@ wffProg (M_prog (ds,ss)) = sf
 -- 2 make sure that all dims are expr of type int
 wffDecl :: Int -> ST -> M_decl -> SF (Int,ST,Int,[(Int,[I_expr])])
 wffDecl lNum st mv@(M_var (id,dims,mt)) =
-    case lookUp st id of
+    --
+    -- *** lookUp ***
+    --    
+    case lookUp st id of      
         Nothing -> sf
             where 
                 sf = insertIfNotLevel lNum st mv 1
         Just x  -> case x of
-            -- same in both cases
             I_VARIABLE(level,_,_,_) -> sf
                 where
                     sf = insertIfNotLevel lNum st mv level
@@ -160,18 +176,21 @@ wffDecl lNum st mv@(M_var (id,dims,mt)) =
 
 --  make sure it has not been declared in current scope
 wffDecl lNum st mf@(M_fun (id,args,retType,decls,stmts)) = 
+    --
+    -- *** lookUp ***
+    --    
     case lookUp st id of
         Nothing -> sf
             where
                 sf = insertIfNotLevel lNum st mf 1
         Just x -> case x of
-            -- same in both cases
             I_VARIABLE(level,_,_,_) -> sf
                 where
                     sf = insertIfNotLevel lNum st mf level
             I_FUNCTION(level,_,_,_) -> sf
                 where
                     sf = insertIfNotLevel lNum st mf level
+
 
 -- returns (label num, symtable, # local vars created (0 or 1), array dimensions only if var is an array)
 --         ( Int,       ST,             Int,                        [(Int,[I_expr])]                    )
@@ -180,8 +199,14 @@ insertIfNotLevel lNum st (M_var (id,_,_)) 0     = FF $ "ERROR in declaration: Th
 insertIfNotLevel lNum st (M_fun (id,_,_,_,_))0  = FF $ "ERROR in declaration: There is an existant declaration for " ++ show id ++ "\n"
 insertIfNotLevel lNum st (M_var (id,dims,mt)) level = sf
     where 
+        --
+        -- *** allMIntExpr ***
+        --        
         b = allMIntExpr st dims
         sf1 = trIExprs st dims
+        --
+        -- *** maybeInsert ***
+        --        
         sf = if b && (isSS sf1)
                 then let
                     -- insert var decl, then look it up to get offset
@@ -195,6 +220,9 @@ insertIfNotLevel lNum st (M_var (id,dims,mt)) level = sf
                 else FF $ "ERROR in declaration: Incompatible array dimensions for " ++ show id ++ "\n"
 insertIfNotLevel lNum st (M_fun (id,args,retType,decls,stmts)) level = sf
     where
+        --
+        -- *** maybeInsert ***
+        --        
         iFuncArgs = map crIFuncArg args
         (lNum',st') = insert lNum st (FUNCTION (id,iFuncArgs,retType))
         sf = SS (lNum',st',0,[])
@@ -213,6 +241,9 @@ insertIfNotLevel lNum st (M_fun (id,args,retType,decls,stmts)) level = sf
 
 wffStmt :: Int -> ST -> M_stmt -> SF (Int,I_stmt)
 wffStmt lNum st (M_ass (id,dims,e)) = 
+    --
+    -- *** lookUp ***
+    --    
     case lookUp st id of
         Nothing -> FF $ "ERROR in assignment: No existant declaration for " ++ show id ++ "\n"
         Just x  -> case x of
@@ -220,39 +251,37 @@ wffStmt lNum st (M_ass (id,dims,e)) =
                 where
                     mt1 = getLookupType x
                     sf1 = wffExpr st e
-                    b   = if (isSS sf1) 
-                            && case e of 
-                                M_id yy -> True
-                                otherwise -> False
-                            then let 
-                                I_VARIABLE (level1,offset1,mtype1,dim1) = fromJust $ lookUp st (getM_idID e)
-                                dims1 = getM_idDims e
-                                in (dim - length dims) == (dim1 - length dims1)
-                            -- M_id (idID,dimsID) -> length dimsID == (dim - length dims)
-                            -- otherwise           -> exactDims x dims
-                            else exactDims x dims
+                    --
+                    -- *** allMIntExpr ***
+                    --                    
+                    b' = allMIntExpr st dims 
+                    --
+                    -- *** correctDims ***
+                    --                    
+                    b''   = exactDims x dims
                    
                     sf2 = if (isSS sf1)
                             then trIExprs st dims
                             else FF ""
+                    --      
+                    -- *** sameMtype ***
+                    --
                     mMt = sameMtype mt1 sf1
-                    sf = getRetSF b (isSS sf1) (isSS sf2) (isJust mMt)
-                        where getRetSF b1 b2 b3 b4
-                                | b1 && b2 && b3 && b4  = let
+                    --
+                    -- *** makeAssStmt ***
+                    --                    
+                    sf = getRetSF b' b'' (isSS sf1) (isSS sf2) (isJust mMt) 
+                        where getRetSF b1 b2 b3 b4 b5
+                                | b1 && b2 && b3 && b4 && b5 = let
                                                             (_,ie) = fromSS sf1
                                                             indices = fromSS sf2
                                                             in SS (lNum, IASS (level,offset,indices,ie))
-                                | not b4 && b1          = FF $ "ERROR in assignment: Cannot assign type " ++ show (fst (fromSS sf1)) ++ " to " ++ show id ++ " of type " ++ show mt1 ++ "\n"
-                                | not b1                = FF $ "ERROR in assignment: Invalid dimensions for " ++ show id ++ "\n"
+                                | not b1                = FF $ "ERROR in assignment: Indices must all be of type integer when assigning to " ++ show id ++ "\n"
+                                | not b2                = FF $ "ERROR in assignment: Invalid dimensions for " ++ show id ++ "\n"                                                            
+                                | not b5                = FF $ "ERROR in assignment: Cannot assign type " ++ show (fst (fromSS sf1)) ++ " to " ++ show id ++ " of type " ++ show mt1 ++ "\n"
+                                
                                 | otherwise             = FF $ fromFF sf1 ++ fromFF sf2
                     
-                    
-                    -- if (b && (isSS sf1) && (isSS sf2) && (isJust mMt))
-                    --         then let
-                    --             (_,ie) = fromSS sf1
-                    --             indices = fromSS sf2
-                    --             in SS (lNum, IASS (level,offset,indices,ie))
-                    --         else FF $ "ERROR in assignment: " ++ fromFF sf1 ++ fromFF sf2
             otherwise       -> FF $ "ERROR in assignment: Cannot assign to a function " ++ show id ++ "\n" 
 
 
@@ -260,10 +289,16 @@ wffStmt lNum st (M_ass (id,dims,e)) =
 wffStmt lNum st (M_while (e,s)) = sf
     where
         sfe = wffExpr st e 
+        --
+        -- *** isBool ***
+        --        
         b = if (isSS sfe)
             then let (mt,_) = fromSS sfe in isMBool mt
             else False
         sfs = wffStmt lNum st s
+        --
+        -- *** makeWhileStmt ***
+        --        
         sf = if (b && (isSS sfe) && (isSS sfs))
             then let
                 (_,ie) = fromSS sfe
@@ -276,6 +311,9 @@ wffStmt lNum st (M_while (e,s)) = sf
 wffStmt lNum st (M_cond (e,s1,s2)) = sf
     where
         sfe1 = wffExpr st e 
+        --
+        -- *** isBool ***
+        --        
         b = if (isSS sfe1)
             then let (mt,_) = fromSS sfe1 in isMBool mt
             else False
@@ -283,6 +321,9 @@ wffStmt lNum st (M_cond (e,s1,s2)) = sf
         sfs2 = if (isSS sfs1)
             then let (lNum1,_) = fromSS sfs1 in wffStmt lNum1 st s2
             else FF $ ""
+        --
+        -- *** makeCondStmt ***
+        --            
         sf = getRetSF b (isSS sfe1) (isSS sfs1) (isSS sfs2)
             where getRetSF b1 b2 b3 b4
                     | b1 && b2 && b3 && b4  = let
@@ -293,24 +334,29 @@ wffStmt lNum st (M_cond (e,s1,s2)) = sf
                     | not b1                = FF $ "ERROR in conditonal: The conditional expression must be of type boolean but is of type " ++ show (fst (fromSS sfe1)) ++ "\n"
                     | otherwise             = FF $ fromFF sfe1 ++ fromFF sfs1 ++ fromFF sfs2
                 
-            --     (b && (isSS sfs1) && (isSS sfs2))
-            -- then let 
-            --     (_,ie) = fromSS sfe1
-            --     (_,is1) = fromSS sfs1
-            --     (lNum2,is2) = fromSS sfs2
-            --     in SS (lNum2,ICOND (ie,is1,is2))
-            -- else FF $ fromFF sfe1 ++ fromFF sfs1 ++ fromFF sfs2
 
     
 
 wffStmt lNum st (M_read (id,dims)) =
+    --
+    -- *** lookUp ***
+    --           
     case lookUp st id of
         Nothing -> FF $ "ERROR in read: No existant declaration for " ++ show id ++ "\n"
         Just x  -> case x of
             I_VARIABLE (level,offset,mtype,nDim)    -> sf
                 where
+                    --
+                    -- *** exactDims ***
+                    --                           
                     b' = exactDims x dims 
+                    --
+                    -- *** allMIntExpr ***
+                    --           
                     b'' = allMIntExpr st dims 
+                    --
+                    -- *** makeIRead ***
+                    --                               
                     sf1 = trIExprs st dims
                     sf = getRetSF b' b'' (isSS sf1)
                         where getRetSF b1 b2 b3 
@@ -321,15 +367,6 @@ wffStmt lNum st (M_read (id,dims)) =
                                 | not b1               = FF $ "ERROR in read: To read into variable, must supply " ++ show nDim ++ " dimensions\n" 
                                 | not b2               = FF $ "ERROR in read: All dimensions must be of type integer\n"
                                 | otherwise         = FF $ fromFF sf1
-                        
-                        -- if b1 && b2 && (isSS sf1)
-                        -- then let
-                        --     ies = fromSS sf1
-                        --     in case mtype of
-                        --         M_int -> (SS (lNum,IREAD_I (level,offset,ies)))
-                        --         M_real -> (SS (lNum,IREAD_F (level,offset,ies)))
-                        --         M_bool -> (SS (lNum,IREAD_B (level,offset,ies)))
-                        -- else FF $ "ERROR with identifier: Invalid dimensions for " ++ show id ++ "\n"
             otherwise       -> FF $ "ERROR in read: Cannot read into a function " ++ show id ++ "\n"
 
 
@@ -337,6 +374,9 @@ wffStmt lNum st (M_read (id,dims)) =
 wffStmt lNum st (M_print e) = sf
     where
         sf1 = wffExpr st e 
+        --
+        -- *** makeIPrint ***
+        --                   
         sf = if (isSS sf1)
             then let  
                 (mtype,ie) = fromSS sf1
@@ -349,36 +389,44 @@ wffStmt lNum st (M_print e) = sf
 wffStmt lNum st (M_return e) = sf
     where
         sf1 = wffExpr st e
+        --
+        -- *** stReturn ***
+        --         
         mt = stReturn st
+        --
+        -- *** sameMtype ***
+        --         
         mMt = sameMtype mt sf1
+        --
+        -- *** makeIReturn ***
+        --         
         sf = getRetSF (isSS sf1) (isJust mMt)
             where getRetSF b1 b2
                     | b1 && b2      = let (mtype,ie) = fromSS sf1 in SS (lNum,IRETURN ie)
-                    | not b2           = FF $ "ERROR with return: Expected to return " ++ (show mt) ++ " but returns " ++ show (fst (fromSS sf1)) ++ "\n"
+                    | not b2        = FF $ "ERROR with return: Expected to return " ++ (show mt) ++ " but returns " ++ show (fst (fromSS sf1)) ++ "\n"
                     | otherwise     = FF $ fromFF sf1
-            
-            
-            
-{-             if ((isSS sf1) && (isJust mMt))
-            then let
-                (mtype,ie) = fromSS sf1
-                in SS (lNum,IRETURN ie)
-            else
-                case sf1 of 
-                    SS _ -> FF $ "ERROR with return: Expected to return " ++ (show mt) ++ " but returns " ++ show (fst (fromSS sf1)) ++ "\n"
-                    FF _ -> FF $ fromFF sf1 -}
+        
                 
 
 wffStmt lNum st (M_block (ds,ss)) = sf
     where
         st0 = newScope L_BLK st
+        --
+        -- *** allWffDecl ***
+        --         
         sf1 = allWffDecl lNum st0 ds
         sf2 = if (isSS sf1)
             then let (lNum',st',_,_) = fromSS sf1 in stepIntoAllFunc lNum' st' ds
             else FF ""
+        --
+        -- *** allWffStmt ***
+        --             
         sf3 = if (isSS sf2) && (isSS sf1)
             then let (lNum',st',_,_) = fromSS sf1 in allWffStmt lNum' st' ss 
             else FF ""
+        --
+        -- *** makeIBlock ***
+        --             
         sf = if (isSS sf1) && (isSS sf2) && (isSS sf3)
             then let
                 (_,_,nVar,iArrDims) = fromSS sf1
@@ -403,27 +451,57 @@ trIExprs st (e:es) = sf
 
 
 wffExpr :: ST -> M_expr -> SF (M_type,I_expr)
+--
+-- *** makeIInt ***
+--   
 wffExpr st (M_ival n) = SS (M_int, IINT (fromIntegral n))
+--
+-- *** makeIReal ***
+--   
 wffExpr st (M_rval n) = SS (M_real,IREAL n)
+--
+-- *** makeIBool ***
+--   
 wffExpr st (M_bval b) = SS (M_bool,IBOOL b)
 wffExpr st (M_size (s,n)) = 
+    --
+    -- *** lookUp ***
+    --     
     case lookUp st s of
         Nothing     -> FF $ "ERROR in size: No existant declaration for " ++ show s ++ "\n"
         Just x      -> case x of
             I_VARIABLE (level,offset,mtype,dim)    ->
+                                --
+                                -- *** checkDim ***
+                                -- 
                                 if (checkDim x n)
+                                --
+                                -- *** makeISize ***
+                                -- 
                                 then SS (M_int, ISIZE (level,offset,n+1)) --3rd arg is the dimension number to look at, +1 from the number of dimensions given
                                 else FF $ "ERROR in size: Cannot access dimension " ++ show (n+1) ++" for a variable " ++ show s ++ " with " ++ show dim ++ " dimensions\n"
             otherwise       -> FF $ "ERROR in size: Cannot get size of a variable " ++ show s ++ "\n"
 wffExpr st (M_id (s,es)) = 
+    --
+    -- *** lookUp ***
+    --         
     case lookUp st s of
         Nothing -> FF $ "ERROR with identifier: No existant declaration for " ++ s ++ "\n"
         Just x  -> case x of
             I_VARIABLE (level,offset,mtype,dim)    -> sf
                 where
-                    mt = getLookupType x
+                    --
+                    -- *** allMIntExpr ***
+                    --                     
                     b1 = allMIntExpr st es
+                    --
+                    -- *** withinDims ***
+                    --                         
                     b2 = withinDims x es
+                    --
+                    -- *** makeIId ***
+                    --                         
+                    mt = getLookupType x
                     sf1 = trIExprs st es
                     sf = if (b1 && b2 && isSS sf1)
                         then let
@@ -438,6 +516,9 @@ wffExpr st (M_app (op,es)) = sf
         sf1 = wffOp st op
         -- make sure all expressions for the operation are of the same type
         -- if it's a function make sure it takes the right number of parameters
+        --
+        -- *** evalWffExprs ***
+        --                 
         sf2 = evalwffExprs st es
         sf = if (isSS sf1) && (isSS sf2)
                 then let
@@ -447,8 +528,14 @@ wffExpr st (M_app (op,es)) = sf
                         sfmtype         = lookupReturnType st op exprTypes
                         sfies           = trIExprs st es
                         in 
+                            --
+                            -- *** isExpectedTypes ***
+                            --                                 
                             if (exprTypes `elem` expectedTypes && (isSS sfmtype) && (isSS sfies))
                             then let
+                                --
+                                -- *** makeIApp ***
+                                --                                     
                                 mt  = fromSS sfmtype
                                 ies = fromSS sfies
                                 iop = trIOpn st op (fst (head exprTypes))
@@ -491,17 +578,26 @@ evalwffExprs st (e:es) = sf
 
 wffOp :: ST -> M_operation -> SF [[(M_type,Int)]]
 wffOp st (M_fn s) = 
+    --
+    -- *** lookUp ***
+    --         
     case lookUp st s of
         Nothing -> FF $ "ERROR with operation: No existant declaration for function " ++ show s ++ "\n"
         Just x  -> case x of 
+            --
+            -- *** makeMfn ***
+            --                 
             I_FUNCTION(level,label,args,retType)    ->  SS [args]
             otherwise                               ->  FF $ "ERROR with operation: Cannot call a variable " ++ show s ++ "\n"
+--
+-- *** wffOp ***
+--                 
 wffOp st op
     | op `elem` [M_lt , M_le , M_gt , M_ge , M_eq , M_add , M_mul , M_sub , M_div , M_neg]                     
                                                                             = SS [[(M_int,0),(M_int,0)],[(M_real,0),(M_real,0)]]
     | op `elem` [M_and , M_or]                                              = SS [[(M_bool,0),(M_bool,0)]]
     | op `elem` [M_not]                                                     = SS [[(M_bool,0)]]
-    | op `elem` [M_float]                                                   = SS [[(M_int,0)],[(M_real,0)]]
+    | op `elem` [M_float]                                                   = SS [[(M_int,0)]]
     | op `elem` [M_floor , M_ceil]                                          = SS [[(M_real,0)]]
     | otherwise                                                             = FF $ "ERROR with operation: " ++ (show op) ++ " does not exist" ++ "\n"
 

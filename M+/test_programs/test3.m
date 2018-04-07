@@ -1,6 +1,10 @@
 /* this is a comment */
 % this is also a comment
-% /* this is a nested comment
+/*
+    Should report an error. Cannot assign a value of 2 to an array x without
+    given dimensions.
+*/
+
 
 var x[3]:int;
 var y[3][2]:int;

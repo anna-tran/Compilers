@@ -32,23 +32,23 @@ data I_stmt = IASS      (Int,Int,[I_expr],I_expr)
             | IBLOCK    ([I_fbody],Int,[(Int,[I_expr])],[I_stmt])
             deriving (Eq, Ord, Read)        
             
-	         -- a block consists of 
-    		 -- (a) a list of local functions
-	    	 -- (b) the number of local varibles declared
-    		 -- (c) a list of array declarations
-	    	 -- (d) the body: a lst of statements
+             -- a block consists of 
+             -- (a) a list of local functions
+             -- (b) the number of local varibles declared
+             -- (c) a list of array declarations
+             -- (d) the body: a lst of statements
 data I_expr = IINT      Int
             | IREAL     Float
             | IBOOL     Bool
             | IID       (Int,Int,[I_expr])   
-	         --  identifier (<level>,<offset>,<array indices>)
+             --  identifier (<level>,<offset>,<array indices>)
             | IAPP      (I_opn,[I_expr])
             | ISIZE     (Int,Int,Int)
             deriving (Eq, Ord, Read)        
             
-	         --   isize(<level>,<offset>,<which dimension>)
-	    	 --   level and offset identify which array the last integer 
-		     --   tells you which dimension you want to look at!!
+             --   isize(<level>,<offset>,<which dimension>)
+             --   level and offset identify which array the last integer 
+             --   tells you which dimension you want to look at!!
 data I_opn = ICALL (String,Int)
            | IADD_F | IMUL_F | ISUB_F | IDIV_F | INEG_F
            | ILT_F  | ILE_F  | IGT_F  | IGE_F  | IEQ_F   -- operations for floats

@@ -1,3 +1,8 @@
+/*
+ *  Should report an error that an integer value cannot be assigned to
+ *  a variable expecting a real number.
+ */
+
 var x:real;
 var y:int;
 begin

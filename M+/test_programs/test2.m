@@ -1,3 +1,7 @@
+/*
+ *  Should report error that 2 does not match with x[][]
+ */
+
 var x[2]:int;      
 fun f(x[][]:int):real
 {

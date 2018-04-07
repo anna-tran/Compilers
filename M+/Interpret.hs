@@ -57,27 +57,25 @@ runFile v f = putStrLn f >> readFile f >>= run v
 run :: Verbosity -> String -> IO ()
 run v s = let ts = myLLexer s in case (pProg ts) of
             Bad s   ->  do 
-                        putStrLn $ "\nParse Failed...\n"
+                        putStrLn $ "\nParse failed...\n"
                         putStrV v "Tokens:"
                         putStrV v $ show ts
                         putStrLn s
                         exitFailure
             Ok tree ->  do 
-                        putStrLn $ "\nParse Successful!\n"
+                        putStrLn $ "\nParse successful!\n"
                         let ast = transProg tree
                         putStrLn $ ("\n[Abstract Syntax]\n\n" ++ (show ast))
                         putStrV v $ ("\n[Linearized tree]\n\n" ++ printTree tree)
                         let sfiprog = wffProg ast
                         if (isSS sfiprog)
                             then do 
-                                putStrLn $ "\nCompiled successfully!\n"
+                                putStrLn $ "\nSemantic analysis successful!\n"
                                 putStrLn $ "\n[Intermediate representation]\n\n"
                                 putStrLn $ show (fromSS sfiprog)
                             else do
-                                putStrLn $ "\nFailed to compile...\n"
+                                putStrLn $ "\nFailure in semantic analysis...\n"
                                 putStrLn $ fromFF sfiprog
-                        -- let (lNum,st) = addProgSymtable ast
- --                       putStrLn $ STypes.showSTList st
                         exitSuccess
 
 

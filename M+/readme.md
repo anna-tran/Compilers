@@ -47,7 +47,7 @@ the next stages.
 	make
 
 
-# Testing
+## Testing
 
 There are sample M+ programs enclosed in this .zip file. Some will have errors in the program to show that semantic analysis works.
 
@@ -56,3 +56,7 @@ To test a program, run
 	./Interpret [-s] <M+ program file>
 
 To disable verbose logging, use the option '-s'. Otherwise, the linearized tree of the M+ program file will also be printed out.	
+
+# Plumbing Diagrams
+
+The attached plumbing diagrams represent the logic of the program. While it is not exactly as the code is written, it depicts the general flow of the input and output data, as well as the interfaces for each component of the abstract syntax tree.

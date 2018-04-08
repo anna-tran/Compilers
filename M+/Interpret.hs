@@ -2,7 +2,7 @@
 module Main where
 
 
-import System.IO ( stdin, hGetContents )
+import System.IO
 import System.Environment ( getArgs, getProgName )
 import System.Exit ( exitFailure, exitSuccess )
 
@@ -74,10 +74,10 @@ run v s = let ts = myLLexer s in case (pProg ts) of
                                 putStrLn $ "\nSemantic analysis successful!\n"
                                 putStrLn $ "\n[Intermediate representation]\n\n"
                                 putStrLn $ show (fromSS sfiprog)
-				let iprogCode = genIProg (fromSS sfiprog)
-				handle <- openFile "machine_code" WriteMode
-				hPutStrLn handle iprogCode
-			    	hClose handle
+                                let iprogCode = genIProg (fromSS sfiprog)
+                                handle <- openFile "machine_code" WriteMode
+                                hPutStrLn handle iprogCode
+                                hClose handle
                             else do
                                 putStrLn $ "\nFailure in semantic analysis...\n"
                                 putStrLn $ fromFF sfiprog

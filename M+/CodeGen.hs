@@ -21,22 +21,22 @@ foldWithLabel lNum func (x:xs) = (lNum2,str)
 
 genIProg :: I_prog -> String
 genIProg (IPROG (fbodies,nVar,arrDims,stmts)) = 
-    "LOAD_R %sp\n" ++
-    "LOAD_R %sp\n" ++
-    "STORE_R %fp\n" ++
-    "ALLOC " ++ show nVar ++ "\n" ++ -- allocate space for variables
-    "LOAD_I " ++ show (nVar+1) ++ "\n" ++   -- initializes deallocation counter    
+    "\tLOAD_R %sp\n" ++
+    "\tLOAD_R %sp\n" ++
+    "\tSTORE_R %fp\n" ++
+    "\tALLOC " ++ show nVar ++ "\n" ++ -- allocate space for variables
+    "\tLOAD_I " ++ show (nVar+1) ++ "\n" ++   -- initializes deallocation counter    
     arrayCode ++ -- allocate space for arrays
     stmtCode ++
-    "LOAD_R %fp\n" ++                       -- deallocate local storage
-    "LOAD_O " ++ show (nVar+1) ++ "\n" ++
-    "APP NEG\n" ++
-    "ALLOC_S\n" ++    
-    "STORE_R %fp\n" ++                      -- restore the caller frame pointer    
-    "HALT\n\n" ++
+    "\tLOAD_R %fp\n" ++                       -- deallocate local storage
+    "\tLOAD_O " ++ show (nVar+1) ++ "\n" ++
+    "\tAPP NEG\n" ++
+    "\tALLOC_S\n" ++    
+    "\tSTORE_R %fp\n" ++                      -- restore the caller frame pointer    
+    "\tHALT\n\n" ++
     funCode
     where
-        arrayCode = (foldl (\acc arrDim -> (genArray nVar arrDim) ++ acc) "" arrDims)
+        arrayCode = (foldl (\acc arrDim -> acc ++ (genArray nVar arrDim)) "" arrDims)
         (lNum,stmtCode) = foldWithLabel 0 genIStmt stmts
         (lNum',funCode) = foldWithLabel lNum genIFbody fbodies
 
@@ -47,23 +47,23 @@ genIProg (IPROG (fbodies,nVar,arrDims,stmts)) =
 genArray :: Int -> (Int,[I_expr]) -> String
 genArray nVar (offset,[]) = ""
 genArray nVar (offset,dims) =
-    "LOAD_R %sp\n" ++
-    "LOAD_R %fp\n" ++
-    "STORE_O " ++ show offset ++ "\n" ++ 
-    (foldl (\acc e -> (genIExpr e) ++ acc) "" dims) ++ -- put all dimensions of the array on the stack
+    "\tLOAD_R %sp\n" ++
+    "\tLOAD_R %fp\n" ++
+    "\tSTORE_O " ++ show offset ++ "\n" ++ 
+    (foldl (\acc e -> acc ++ (genIExpr e)) "" dims) ++ -- put all dimensions of the array on the stack
     (genArrayHeaders nDims offset) ++
     (genArrayStorage nDims offset) ++       -- TOS has the number of slots to allocate to array based on dimensions
 
     -- now sum up the total amount of space needed for this array
-    "LOAD_R %fp\n" ++
-    "LOAD_O " ++ show (nVar+1) ++ "\n" ++   -- load deallocation counter
-    "LOAD_I " ++ show nDims ++ "\n" ++      -- load # of array bounds
-    "APP ADD\n" ++
-    "APP ADD\n" ++
+    "\tLOAD_R %fp\n" ++
+    "\tLOAD_O " ++ show (nVar+1) ++ "\n" ++   -- load deallocation counter
+    "\tLOAD_I " ++ show nDims ++ "\n" ++      -- load # of array bounds
+    "\tAPP ADD\n" ++
+    "\tAPP ADD\n" ++
     
-    "LOAD_R %fp" ++ 
-    "STORE_O " ++ show (nVar+1) ++ "\n" ++  -- assign new value to deallocaton counter
-    "ALLOC_S\n"                             -- allocate required storage for array
+    "\tLOAD_R %fp\n" ++ 
+    "\tSTORE_O " ++ show (nVar+1) ++ "\n" ++  -- assign new value to deallocaton counter
+    "\tALLOC_S\n"                             -- allocate required storage for array
     where
         nDims = length dims
 
@@ -71,61 +71,61 @@ genArray nVar (offset,dims) =
 genArrayHeaders :: Int -> Int -> String
 genArrayHeaders 0 offset = ""
 genArrayHeaders 1 offset =
-    "LOAD_R %fp\n" ++
-    "LOAD_O " ++ show offset ++ "\n" ++
-    "STORE_O 1\n"    
+    "\tLOAD_R %fp\n" ++
+    "\tLOAD_O " ++ show offset ++ "\n" ++
+    "\tSTORE_O 1\n"    
 genArrayHeaders nDims offset = 
-    "LOAD_R %fp\n" ++
-    "LOAD_O " ++ show offset ++ "\n" ++
-    "STORE_O " ++ show nDims ++ "\n" ++
+    "\tLOAD_R %fp\n" ++
+    "\tLOAD_O " ++ show offset ++ "\n" ++
+    "\tSTORE_O " ++ show nDims ++ "\n" ++
     genArrayHeaders (nDims-1) offset
 
 genArrayStorage :: Int -> Int -> String
 genArrayStorage 0 offset = ""
 genArrayStorage 1 offset = 
-    "LOAD_R %fp\n" ++
-    "LOAD_O " ++ show offset ++ "\n" ++
-    "LOAD_O 1\n"
+    "\tLOAD_R %fp\n" ++
+    "\tLOAD_O " ++ show offset ++ "\n" ++
+    "\tLOAD_O 1\n"
 genArrayStorage nDims offset =
     (genArrayStorage (nDims-1) offset) ++
-    "LOAD_R %fp\n" ++
-    "LOAD_O " ++ show offset ++ "\n" ++
-    "LOAD_O " ++ show nDims ++ "\n" ++
-    "APP MUL\n"
+    "\tLOAD_R %fp\n" ++
+    "\tLOAD_O " ++ show offset ++ "\n" ++
+    "\tLOAD_O " ++ show nDims ++ "\n" ++
+    "\tAPP MUL\n"
 
 
 
 genIFbody :: Int -> I_fbody -> (Int,String)
 genIFbody lNum (IFUN (label,fbodies,nVar,nArg,arrDims,stmts)) = (lNum3,
-    label ++ ":\n" ++
-    "LOAD_R %sp\n" ++
-    "STORE_R %fp\n" ++                      -- set new FP to top stack element
-    "ALLOC " ++ show nVar ++ "\n" ++        -- allocate nVar void cells
-    "LOAD_I " ++ show (nVar+1) ++ "\n" ++   -- initializes deallocation counter
+    label ++ ":" ++
+    "\tLOAD_R %sp\n" ++
+    "\tSTORE_R %fp\n" ++                      -- set new FP to top stack element
+    "\tALLOC " ++ show nVar ++ "\n" ++        -- allocate nVar void cells
+    "\tLOAD_I " ++ show (nVar+2) ++ "\n" ++   -- initializes deallocation counter, +2 for this counter and for removing code pointer at %fp 0
 
     arrayCode ++
     stmtCode ++                             -- value of return loaded
 
-    "LOAD_R %fp\n" ++                       -- return from a function call
-    "STORE_O " ++ show (-(nArg+3)) ++ "\n" ++   -- write the return value to the first argument slot on the stack
-    "LOAD_R %fp\n" ++                       -- write the return pointer to the second argument slot
-    "LOAD_O 0\n" ++
-    "LOAD_R %fp\n" ++
-    "STORE_O " ++ show (-(nArg+2)) ++ "\n" ++
+    "\tLOAD_R %fp\n" ++                       -- return from a function call
+    "\tSTORE_O " ++ show (-(nArg+3)) ++ "\n" ++   -- write the return value to the first argument slot on the stack
+    "\tLOAD_R %fp\n" ++                       -- write the return pointer to the second argument slot
+    "\tLOAD_O 0\n" ++
+    "\tLOAD_R %fp\n" ++
+    "\tSTORE_O " ++ show (-(nArg+2)) ++ "\n" ++
 
-    "LOAD_R %fp\n" ++                       -- deallocate local storage
-    "LOAD_O " ++ show (nVar+1) ++ "\n" ++
-    "APP NEG\n" ++
-    "ALLOC_S\n" ++
+    "\tLOAD_R %fp\n" ++                       -- deallocate local storage
+    "\tLOAD_O " ++ show (nVar+1) ++ "\n" ++
+    "\tAPP NEG\n" ++
+    "\tALLOC_S\n" ++
 
-    "STORE_R %fp\n" ++                      -- restore the caller frame pointer
-    "ALLOC " ++ show (-nArg) ++ "\n" ++     -- clean up the arguments
-    "JUMP_S\n\n" ++                           -- do jump to the return code pointer
+    "\tSTORE_R %fp\n" ++                      -- restore the caller frame pointer
+    "\tALLOC " ++ show (-nArg) ++ "\n" ++     -- clean up the arguments
+    "\tJUMP_S\n\n" ++                           -- do jump to the return code pointer
     funCode 
     )
     where
         (lNum1,label1) = genLabel lNum
-        arrayCode = (foldl (\acc arrDim -> (genArray nVar arrDim) ++ acc) "" arrDims)
+        arrayCode = (foldl (\acc arrDim -> acc ++ (genArray nVar arrDim)) "" arrDims)
         (lNum2,stmtCode) = foldWithLabel lNum1 genIStmt stmts
         (lNum3,funCode) = foldWithLabel lNum2 genIFbody fbodies
 
@@ -133,18 +133,18 @@ genIStmt :: Int -> I_stmt -> (Int,String)
 genIStmt lNum (IASS (level,offset,arrIndices,ie)) = (lNum,
     exprCode ++     -- push the expr value onto the stack
     arrCode ++      -- push the correct pointer and offset from fp onto the stack
-    "STORE_OS\n"
+    "\tSTORE_OS\n"
     ) where
         exprCode = genIExpr ie
         arrCode = genArrayAccess level offset arrIndices
 
 genIStmt lNum (IWHILE (ie,is)) = (lNum3,
-    label1 ++ ":\n" ++
+    label1 ++ ":" ++
     exprCode ++
-    "JUMP_C " ++ label2 ++ "\n" ++
+    "\tJUMP_C " ++ label2 ++ "\n" ++
     stmtCode ++
-    "JUMP " ++ label1 ++ "\n" ++
-    label2 ++ ":\n"
+    "\tJUMP " ++ label1 ++ "\n" ++
+    label2 ++ ":"
     ) where
         exprCode = genIExpr ie
         (lNum1,label1) = genLabel lNum
@@ -153,12 +153,12 @@ genIStmt lNum (IWHILE (ie,is)) = (lNum3,
         
 genIStmt lNum (ICOND (ie,is1,is2)) = (lNum4,
     exprCode ++ 
-    "JUMP_C " ++ label1 ++ "\n" ++  -- if false, jump to false label1
+    "\tJUMP_C " ++ label1 ++ "\n" ++  -- if false, jump to false label1
     stmtCode1 ++                    -- if true, do this
-    "JUMP " ++ label2 ++ "\n" ++    -- jump to end
-    label1 ++ ":\n" ++
+    "\tJUMP " ++ label2 ++ "\n" ++    -- jump to end
+    label1 ++ ":" ++
     stmtCode2 ++
-    label2 ++ ":\n"                 -- straight to end
+    label2 ++ ":"                 -- straight to end
     ) where
         exprCode = genIExpr ie
         (lNum1,label1) = genLabel lNum
@@ -167,41 +167,41 @@ genIStmt lNum (ICOND (ie,is1,is2)) = (lNum4,
         (lNum4,stmtCode2) = genIStmt lNum3 is2
 
 genIStmt lNum (IREAD_F (level,offset,arrIndices)) = (lNum,
-    "READ_F\n" ++
+    "\tREAD_F\n" ++
     arrayCode ++
-    "STORE_OS\n"
+    "\tSTORE_OS\n"
     ) where 
         arrayCode = genArrayAccess level offset arrIndices
 
 genIStmt lNum (IREAD_I (level,offset,arrIndices)) = (lNum,
-    "READ_I\n" ++
+    "\tREAD_I\n" ++
     arrayCode ++
-    "STORE_OS\n"
+    "\tSTORE_OS\n"
     ) where 
         arrayCode = genArrayAccess level offset arrIndices
 
 genIStmt lNum (IREAD_B (level,offset,arrIndices)) = (lNum,
-    "READ_B\n" ++
+    "\tREAD_B\n" ++
     arrayCode ++
-    "STORE_OS\n"
+    "\tSTORE_OS\n"
     ) where 
         arrayCode = genArrayAccess level offset arrIndices
 
 genIStmt lNum (IPRINT_F ie) = (lNum,
     exprCode ++ 
-    "PRINT_F\n"
+    "\tPRINT_F\n"
     ) where 
         exprCode = genIExpr ie
 
 genIStmt lNum (IPRINT_I ie) = (lNum,
     exprCode ++ 
-    "PRINT_I\n"
+    "\tPRINT_I\n"
     ) where 
         exprCode = genIExpr ie
 
 genIStmt lNum (IPRINT_B ie) = (lNum,
     exprCode ++ 
-    "PRINT_B\n"
+    "\tPRINT_B\n"
     ) where 
         exprCode = genIExpr ie
 
@@ -211,28 +211,28 @@ genIStmt lNum (IRETURN ie) = (lNum,exprCode)
         exprCode = genIExpr ie
 
 genIStmt lNum (IBLOCK (fbodies,nVar,arrDims,stmts)) = (lNum2,
-    "LOAD_R %fp\n" ++                       -- save the old frame pointer as access link
-    "ALLOC 2\n" ++                          -- 2 void cells to be consistent with finding access link
-    "LOAD_R %sp\n" ++
-    "STORE_R %fp\n" ++                      -- set new FP to top stack element
-    "ALLOC " ++ show nVar ++ "\n" ++        -- allocate nVar void cells
+    "\tLOAD_R %fp\n" ++                       -- save the old frame pointer as access link
+    "\tALLOC 2\n" ++                          -- 2 void cells to be consistent with finding access link
+    "\tLOAD_R %sp\n" ++
+    "\tSTORE_R %fp\n" ++                      -- set new FP to top stack element
+    "\tALLOC " ++ show nVar ++ "\n" ++        -- allocate nVar void cells
     
-    "LOAD_I " ++ show (nVar+3) ++ "\n" ++   -- initializes deallocation counter, +2 to get rid of void cells
+    "\tLOAD_I " ++ show (nVar+3) ++ "\n" ++   -- initializes deallocation counter, +2 to get rid of void cells
 
     arrayCode ++
     stmtCode ++                             
 
-    "LOAD_R %fp\n" ++                       -- deallocate local storage
-    "LOAD_O " ++ show (nVar+1) ++ "\n" ++
-    "APP NEG\n" ++
-    "ALLOC_S\n" ++                          -- now old frame pointer on top of stack
+    "\tLOAD_R %fp\n" ++                       -- deallocate local storage
+    "\tLOAD_O " ++ show (nVar+1) ++ "\n" ++
+    "\tAPP NEG\n" ++
+    "\tALLOC_S\n" ++                          -- now old frame pointer on top of stack
 
-    "STORE_R %fp\n\n" ++                    -- restore the caller frame pointer
+    "\tSTORE_R %fp\n\n" ++                    -- restore the caller frame pointer
     
     funCode 
     )
     where
-        arrayCode = (foldl (\acc arrDim -> (genArray nVar arrDim) ++ acc) "" arrDims)
+        arrayCode = (foldl (\acc arrDim -> acc ++ (genArray nVar arrDim) ) "" arrDims)
         (lNum1,stmtCode) = foldWithLabel lNum genIStmt stmts
         (lNum2,funCode) = foldWithLabel lNum1 genIFbody fbodies           
         
@@ -245,13 +245,13 @@ genArrayAccess level offset arrIndices =
     case arrSlot of 
         Nothing -> 
                     jumpToLevel level ++                -- push the correct level fp onto the stack
-                    "LOAD_I " ++ show offset ++ "\n"    -- push offset onto the stack
+                    "\tLOAD_I " ++ show offset ++ "\n"    -- push offset onto the stack
         Just accessCode -> 
                     jumpToLevel level ++                -- push the correct level fp onto the stack
-                    "LOAD_O " ++ show offset ++ "\n" ++ -- top of stack has the pointer to array header
-                    "LOAD_I " ++ show nDims ++ "\n" ++
+                    "\tLOAD_O " ++ show offset ++ "\n" ++ -- top of stack has the pointer to array header
+                    "\tLOAD_I " ++ show nDims ++ "\n" ++
                     accessCode ++
-                    "APP ADD\n"                         -- #dims (accounts for the header) + offset of slot
+                    "\tAPP ADD\n"                         -- #dims (accounts for the header) + offset of slot
     where
         nDims = length arrIndices
         arrSlot = genArraySlot level offset nDims arrIndices
@@ -267,79 +267,79 @@ genArraySlot level offset nDims [arrIndex] =
 genArraySlot level offset nDims (ai:ais) =
     Just $ 
     jumpToLevel level ++
-    "LOAD_O " ++ show offset ++ "\n" ++
-    "LOAD_O " ++ show (nDims - length ais) ++ "\n" ++ 
-    "LOAD_I 1\n" ++     
-    "APP SUB\n" ++      -- (d1-1)
+    "\tLOAD_O " ++ show offset ++ "\n" ++
+    "\tLOAD_O " ++ show (nDims - length ais) ++ "\n" ++ 
+    "\tLOAD_I 1\n" ++     
+    "\tAPP SUB\n" ++      -- (d1-1)
     (genIExpr ai) ++
-    "APP MUL\n" ++      -- (d1-1) * r
+    "\tAPP MUL\n" ++      -- (d1-1) * r
     fromJust (genArraySlot level offset nDims ais) ++
-    "APP ADD\n"         -- (d1-1) * r + s
+    "\tAPP ADD\n"         -- (d1-1) * r + s
 
 
 
 -- push value on top of the stack
 genIExpr :: I_expr -> String
-genIExpr (IINT n) = "LOAD_I " ++ show n ++ "\n"
-genIExpr (IREAL n) = "LOAD_F " ++ show n ++ "\n"
-genIExpr (IBOOL b) = "LOAD_B " ++ show b ++ "\n"
+genIExpr (IINT n) = "\tLOAD_I " ++ show n ++ "\n"
+genIExpr (IREAL n) = "\tLOAD_F " ++ show n ++ "\n"
+genIExpr (IBOOL b) = "\tLOAD_B " ++ show b ++ "\n"
 genIExpr (IID (level,offset,arrIndices)) = 
     arrayCode ++
-    "LOAD_OS\n"
+    "\tLOAD_OS\n"
     where
         arrayCode = genArrayAccess level offset arrIndices
 genIExpr (IAPP (op,ies)) =
     exprsCode ++
     opCode
     where
-        exprsCode = foldl (\acc ie -> (genIExpr ie) ++ acc) "" ies
+        exprsCode = foldl (\acc ie -> acc ++ (genIExpr ie)) "" ies
         opCode = genIOpn op
 
 genIExpr (ISIZE (level,offset,dimNum)) = 
     jumpToLevel level ++
-    "LOAD_O " ++ show offset ++ "\n" ++
-    "LOAD_O " ++ show dimNum ++ "\n"
+    "\tLOAD_O " ++ show offset ++ "\n" ++
+    "\tLOAD_O " ++ show dimNum ++ "\n"
 
 
 
 -- get the fp of the given level
 jumpToLevel :: Int -> String 
 jumpToLevel level = 
-    "LOAD_R %fp\n" ++
-    foldl1 (++) (replicate level "LOAD_O -2\n")
+    "\tLOAD_R %fp\n" ++
+    foldl (++) ""  (replicate level "\tLOAD_O -2\n")
 
 
 genIOpn :: I_opn -> String
 genIOpn (ICALL (label,level)) = 
     -- load args
-    "ALLOC 1\n" ++
+    "\tALLOC 1\n" ++
     jumpToLevel level ++ 
-    "LOAD_R %fp\n" ++
-    "LOAD_R %cp\n" ++
-    "JUMP " ++ label ++ "\n"
-genIOpn IADD = "APP ADD\n"
-genIOpn IMUL = "APP MUL\n"
-genIOpn ISUB = "APP SUB\n"
-genIOpn IDIV = "APP DIV\n"
-genIOpn INEG = "APP NEG\n"
-genIOpn ILT = "APP LT\n"
-genIOpn ILE = "APP LE\n"
-genIOpn IGT = "APP GT\n"
-genIOpn IGE = "APP GE\n"
-genIOpn IEQ = "APP EQ\n"    
-genIOpn IADD_F = "APP ADD_F\n"
-genIOpn IMUL_F = "APP MUL_F\n"
-genIOpn ISUB_F = "APP SUB_F\n"
-genIOpn IDIV_F = "APP DIV_F\n"
-genIOpn INEG_F = "APP NEG_F\n"
-genIOpn ILT_F = "APP LT_F\n"
-genIOpn ILE_F = "APP LE_F\n"
-genIOpn IGT_F = "APP GT_F\n"
-genIOpn IGE_F = "APP GE_F\n"
-genIOpn IEQ_F = "APP EQ_F\n"
-genIOpn INOT = "APP NOT\n"
-genIOpn IAND = "APP AND\n"
-genIOpn IOR = "APP OR\n"
-genIOpn IFLOAT = "APP FLOAT\n"
-genIOpn ICEIL = "APP CEIL\n"
-genIOpn IFLOOR = "APP FLOOR\n"
+    "\tLOAD_R %fp\n" ++
+    "\tLOAD_R %cp\n" ++
+    "\tJUMP " ++ label ++ "\n"
+genIOpn IADD = "\tAPP ADD\n"
+genIOpn IMUL = "\tAPP MUL\n"
+genIOpn ISUB = "\tAPP SUB\n"
+genIOpn IDIV = "\tAPP DIV\n"
+genIOpn INEG = "\tAPP NEG\n"
+genIOpn ILT = "\tAPP LT\n"
+genIOpn ILE = "\tAPP LE\n"
+genIOpn IGT = "\tAPP GT\n"
+genIOpn IGE = "\tAPP GE\n"
+genIOpn IEQ = "\tAPP EQ\n"    
+genIOpn IADD_F = "\tAPP ADD_F\n"
+genIOpn IMUL_F = "\tAPP MUL_F\n"
+genIOpn ISUB_F = "\tAPP SUB_F\n"
+genIOpn IDIV_F = "\tAPP DIV_F\n"
+genIOpn INEG_F = "\tAPP NEG_F\n"
+genIOpn ILT_F = "\tAPP LT_F\n"
+genIOpn ILE_F = "\tAPP LE_F\n"
+genIOpn IGT_F = "\tAPP GT_F\n"
+genIOpn IGE_F = "\tAPP GE_F\n"
+genIOpn IEQ_F = "\tAPP EQ_F\n"
+genIOpn INOT = "\tAPP NOT\n"
+genIOpn IAND = "\tAPP AND\n"
+genIOpn IOR = "\tAPP OR\n"
+genIOpn IFLOAT = "\tAPP FLOAT\n"
+genIOpn ICEIL = "\tAPP CEIL\n"
+genIOpn IFLOOR = "\tAPP FLOOR\n"

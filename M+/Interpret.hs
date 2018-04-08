@@ -66,16 +66,16 @@ run v s = let ts = myLLexer s in case (pProg ts) of
             Ok tree ->  do 
                         putStrLn $ "\nParse successful!\n"
                         let ast = transProg tree
-                        putStrLn $ ("\n[Abstract Syntax]\n\n" ++ (show ast))
+                        putStrV v $ ("\n[Abstract Syntax]\n\n" ++ (show ast))
                         putStrV v $ ("\n[Linearized tree]\n\n" ++ printTree tree)
                         let sfiprog = wffProg ast
                         if (isSS sfiprog)
                             then do 
                                 putStrLn $ "\nSemantic analysis successful!\n"
-                                putStrLn $ "\n[Intermediate representation]\n\n"
-                                putStrLn $ show (fromSS sfiprog)
+                                putStrV v $ "\n[Intermediate representation]\n\n"
+                                putStrV v $ show (fromSS sfiprog)
                                 let iprogCode = genIProg (fromSS sfiprog)
-                                handle <- openFile "machine_code" WriteMode
+                                handle <- openFile "machine_code.am" WriteMode
                                 hPutStrLn handle iprogCode
                                 hClose handle
                             else do

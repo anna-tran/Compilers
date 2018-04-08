@@ -593,12 +593,13 @@ wffOp st (M_fn s) =
 -- *** wffOp ***
 --                 
 wffOp st op
-    | op `elem` [M_lt , M_le , M_gt , M_ge , M_eq , M_add , M_mul , M_sub , M_div , M_neg]                     
+    | op `elem` [M_lt , M_le , M_gt , M_ge , M_eq , M_add , M_mul , M_sub , M_div]                     
                                                                             = SS [[(M_int,0),(M_int,0)],[(M_real,0),(M_real,0)]]
     | op `elem` [M_and , M_or]                                              = SS [[(M_bool,0),(M_bool,0)]]
     | op `elem` [M_not]                                                     = SS [[(M_bool,0)]]
     | op `elem` [M_float]                                                   = SS [[(M_int,0)]]
     | op `elem` [M_floor , M_ceil]                                          = SS [[(M_real,0)]]
+    | op `elem` [M_neg]                                                     = SS [[(M_int,0)],[(M_real,0)]]
     | otherwise                                                             = FF $ "ERROR with operation: " ++ (show op) ++ " does not exist" ++ "\n"
 
 

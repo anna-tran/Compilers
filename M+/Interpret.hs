@@ -16,6 +16,7 @@ import ErrM
 import SymbolTable
 import SymbolTypes
 import Wff
+import CodeGen
 
 comment :: [LexM.Token] -> Int -> [LexM.Token]
 comment [] 0 = []
@@ -73,6 +74,10 @@ run v s = let ts = myLLexer s in case (pProg ts) of
                                 putStrLn $ "\nSemantic analysis successful!\n"
                                 putStrLn $ "\n[Intermediate representation]\n\n"
                                 putStrLn $ show (fromSS sfiprog)
+				let iprogCode = genIProg (fromSS sfiprog)
+				handle <- openFile "machine_code" WriteMode
+				hPutStrLn handle iprogCode
+			    	hClose handle
                             else do
                                 putStrLn $ "\nFailure in semantic analysis...\n"
                                 putStrLn $ fromFF sfiprog

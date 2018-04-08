@@ -2,6 +2,8 @@ module CodeGen where
 
 import IR 
 import Data.Maybe
+import Data.Char
+
 
 genLabel :: Int -> (Int,String)
 genLabel n = (n+1,label)
@@ -50,9 +52,12 @@ genArray nVar (offset,dims) =
     "\tLOAD_R %sp\n" ++
     "\tLOAD_R %fp\n" ++
     "\tSTORE_O " ++ show offset ++ "\n" ++ 
-    (foldl (\acc e -> acc ++ (genIExpr e)) "" dims) ++ -- put all dimensions of the array on the stack
-    (genArrayHeaders nDims offset) ++
+
+    (foldl (\acc e -> acc ++ (genIExpr e)) "" dims) ++ -- put all dimensions of the array on the stack, these are also the array headers
+--    (genArrayHeaders nDims offset) ++
     (genArrayStorage nDims offset) ++       -- TOS has the number of slots to allocate to array based on dimensions
+    "\tLOAD_R %sp\n" ++
+    "\tLOAD_O 0\n" ++                       -- make copy of num slots for deallocation counter
 
     -- now sum up the total amount of space needed for this array
     "\tLOAD_R %fp\n" ++
@@ -249,7 +254,7 @@ genArrayAccess level offset arrIndices =
         Just accessCode -> 
                     jumpToLevel level ++                -- push the correct level fp onto the stack
                     "\tLOAD_O " ++ show offset ++ "\n" ++ -- top of stack has the pointer to array header
-                    "\tLOAD_I " ++ show nDims ++ "\n" ++
+                    "\tLOAD_I " ++ show (nDims+1) ++ "\n" ++ -- header starts at offset 1, not 0 so add 1
                     accessCode ++
                     "\tAPP ADD\n"                         -- #dims (accounts for the header) + offset of slot
     where
@@ -282,7 +287,7 @@ genArraySlot level offset nDims (ai:ais) =
 genIExpr :: I_expr -> String
 genIExpr (IINT n) = "\tLOAD_I " ++ show n ++ "\n"
 genIExpr (IREAL n) = "\tLOAD_F " ++ show n ++ "\n"
-genIExpr (IBOOL b) = "\tLOAD_B " ++ show b ++ "\n"
+genIExpr (IBOOL b) = "\tLOAD_B " ++ map toLower (show b) ++ "\n"
 genIExpr (IID (level,offset,arrIndices)) = 
     arrayCode ++
     "\tLOAD_OS\n"

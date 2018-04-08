@@ -1,0 +1,921 @@
+	LOAD_R %sp
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 1
+	LOAD_I 2
+	LOAD_R %sp
+	LOAD_R %fp
+	STORE_O 1
+	LOAD_I 2
+	LOAD_I 2
+	LOAD_R %fp
+	LOAD_O 1
+	LOAD_O 1
+	LOAD_R %fp
+	LOAD_O 1
+	LOAD_O 2
+	APP MUL
+	LOAD_R %sp
+	LOAD_O 0
+	LOAD_R %fp
+	LOAD_O 2
+	LOAD_I 2
+	APP ADD
+	APP ADD
+	LOAD_R %fp
+	STORE_O 2
+	ALLOC_S
+	LOAD_R %fp
+	LOAD_I 1
+	LOAD_OS
+	ALLOC 1
+	LOAD_R %fp
+	LOAD_R %fp
+	LOAD_R %cp
+	JUMP f_read_matrix1
+	JUMP_C label0
+	LOAD_R %fp
+	LOAD_I 1
+	LOAD_OS
+	LOAD_R %fp
+	LOAD_I 1
+	LOAD_OS
+	LOAD_R %fp
+	LOAD_I 1
+	LOAD_OS
+	ALLOC 1
+	LOAD_R %fp
+	LOAD_R %fp
+	LOAD_R %cp
+	JUMP f_mult_matrix0
+	JUMP_C label2
+	LOAD_R %fp
+	LOAD_I 1
+	LOAD_OS
+	ALLOC 1
+	LOAD_R %fp
+	LOAD_R %fp
+	LOAD_R %cp
+	JUMP f_write_matrix2
+	JUMP_C label4
+	LOAD_R %fp
+	ALLOC 2
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+
+	JUMP label5
+label4:	LOAD_R %fp
+	ALLOC 2
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+
+label5:	JUMP label3
+label2:	LOAD_R %fp
+	ALLOC 2
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+
+label3:	JUMP label1
+label0:	LOAD_R %fp
+	ALLOC 2
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+
+label1:	LOAD_R %fp
+	LOAD_O 2
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+	HALT
+
+f_mult_matrix0:	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 8
+	LOAD_I 10
+	LOAD_R %sp
+	LOAD_R %fp
+	STORE_O 1
+	LOAD_R %fp
+	LOAD_O -4
+	LOAD_O 1
+	LOAD_R %fp
+	LOAD_O -5
+	LOAD_O 2
+	LOAD_R %fp
+	LOAD_O 1
+	LOAD_O 1
+	LOAD_R %fp
+	LOAD_O 1
+	LOAD_O 2
+	APP MUL
+	LOAD_R %sp
+	LOAD_O 0
+	LOAD_R %fp
+	LOAD_O 9
+	LOAD_I 2
+	APP ADD
+	APP ADD
+	LOAD_R %fp
+	STORE_O 9
+	ALLOC_S
+	LOAD_R %fp
+	LOAD_O -4
+	LOAD_O 1
+	LOAD_R %fp
+	LOAD_I 2
+	STORE_OS
+	LOAD_R %fp
+	LOAD_O -5
+	LOAD_O 1
+	LOAD_R %fp
+	LOAD_I 3
+	STORE_OS
+	LOAD_R %fp
+	LOAD_O -6
+	LOAD_O 2
+	LOAD_R %fp
+	LOAD_I 4
+	STORE_OS
+	LOAD_R %fp
+	LOAD_I 2
+	LOAD_OS
+	LOAD_R %fp
+	LOAD_O -6
+	LOAD_O 1
+	APP EQ
+	LOAD_R %fp
+	LOAD_I 3
+	LOAD_OS
+	LOAD_R %fp
+	LOAD_O -4
+	LOAD_O 2
+	APP EQ
+	APP AND
+	LOAD_R %fp
+	LOAD_I 4
+	LOAD_OS
+	LOAD_R %fp
+	LOAD_O -5
+	LOAD_O 2
+	APP EQ
+	APP AND
+	JUMP_C label7
+	LOAD_R %fp
+	ALLOC 2
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 3
+	LOAD_I 0
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_I 5
+	STORE_OS
+label9:	LOAD_R %fp
+	LOAD_O -2
+	LOAD_I 5
+	LOAD_OS
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_I 2
+	LOAD_OS
+	APP LT
+	JUMP_C label10
+	LOAD_R %fp
+	ALLOC 2
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 3
+	LOAD_I 0
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 6
+	STORE_OS
+label11:	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 6
+	LOAD_OS
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 4
+	LOAD_OS
+	APP LT
+	JUMP_C label12
+	LOAD_R %fp
+	ALLOC 2
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 3
+	LOAD_F 0.0
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O 1
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O 1
+	LOAD_O 1
+	LOAD_I 1
+	APP SUB
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 5
+	LOAD_OS
+	APP MUL
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 6
+	LOAD_OS
+	APP ADD
+	APP ADD
+	STORE_OS
+	LOAD_I 0
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 7
+	STORE_OS
+label13:	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 7
+	LOAD_OS
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 3
+	LOAD_OS
+	APP LT
+	JUMP_C label14
+	LOAD_R %fp
+	ALLOC 2
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O 1
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O 1
+	LOAD_O 1
+	LOAD_I 1
+	APP SUB
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 5
+	LOAD_OS
+	APP MUL
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 6
+	LOAD_OS
+	APP ADD
+	APP ADD
+	LOAD_OS
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -4
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -4
+	LOAD_O 1
+	LOAD_I 1
+	APP SUB
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 5
+	LOAD_OS
+	APP MUL
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 7
+	LOAD_OS
+	APP ADD
+	APP ADD
+	LOAD_OS
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -5
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -5
+	LOAD_O 1
+	LOAD_I 1
+	APP SUB
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 7
+	LOAD_OS
+	APP MUL
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 6
+	LOAD_OS
+	APP ADD
+	APP ADD
+	LOAD_OS
+	APP MUL_F
+	APP ADD_F
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O 1
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O 1
+	LOAD_O 1
+	LOAD_I 1
+	APP SUB
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 5
+	LOAD_OS
+	APP MUL
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 6
+	LOAD_OS
+	APP ADD
+	APP ADD
+	STORE_OS
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 7
+	LOAD_OS
+	LOAD_I 1
+	APP ADD
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 7
+	STORE_OS
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+
+	JUMP label13
+label14:	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 6
+	LOAD_OS
+	LOAD_I 1
+	APP ADD
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 6
+	STORE_OS
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+
+	JUMP label11
+label12:	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 5
+	LOAD_OS
+	LOAD_I 1
+	APP ADD
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 5
+	STORE_OS
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+
+	JUMP label9
+label10:	LOAD_I 0
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_I 5
+	STORE_OS
+label15:	LOAD_R %fp
+	LOAD_O -2
+	LOAD_I 5
+	LOAD_OS
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_I 2
+	LOAD_OS
+	APP LT
+	JUMP_C label16
+	LOAD_R %fp
+	ALLOC 2
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 3
+	LOAD_I 0
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 6
+	STORE_OS
+label17:	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 6
+	LOAD_OS
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 4
+	LOAD_OS
+	APP LT
+	JUMP_C label18
+	LOAD_R %fp
+	ALLOC 2
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O 1
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O 1
+	LOAD_O 1
+	LOAD_I 1
+	APP SUB
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 5
+	LOAD_OS
+	APP MUL
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 6
+	LOAD_OS
+	APP ADD
+	APP ADD
+	LOAD_OS
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -6
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -6
+	LOAD_O 1
+	LOAD_I 1
+	APP SUB
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 5
+	LOAD_OS
+	APP MUL
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 6
+	LOAD_OS
+	APP ADD
+	APP ADD
+	STORE_OS
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 6
+	LOAD_OS
+	LOAD_I 1
+	APP ADD
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 6
+	STORE_OS
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+
+	JUMP label17
+label18:	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 5
+	LOAD_OS
+	LOAD_I 1
+	APP ADD
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 5
+	STORE_OS
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+
+	JUMP label15
+label16:	LOAD_B true
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_I 8
+	STORE_OS
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+
+	JUMP label8
+label7:	LOAD_B false
+	LOAD_R %fp
+	LOAD_I 8
+	STORE_OS
+label8:	LOAD_R %fp
+	LOAD_I 8
+	LOAD_OS
+	LOAD_R %fp
+	STORE_O -6
+	LOAD_R %fp
+	LOAD_O 0
+	LOAD_R %fp
+	STORE_O -5
+	LOAD_R %fp
+	LOAD_O 9
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+	ALLOC -3
+	JUMP_S
+
+f_read_matrix1:	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 2
+	LOAD_I 4
+	LOAD_I 0
+	LOAD_R %fp
+	LOAD_I 1
+	STORE_OS
+label20:	LOAD_R %fp
+	LOAD_I 1
+	LOAD_OS
+	LOAD_R %fp
+	LOAD_O -4
+	LOAD_O 2
+	APP LT
+	JUMP_C label21
+	LOAD_R %fp
+	ALLOC 2
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 3
+	LOAD_I 0
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_I 2
+	STORE_OS
+label22:	LOAD_R %fp
+	LOAD_O -2
+	LOAD_I 2
+	LOAD_OS
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -4
+	LOAD_O 2
+	APP LT
+	JUMP_C label23
+	LOAD_R %fp
+	ALLOC 2
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 3
+	READ_F
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -4
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -4
+	LOAD_O 1
+	LOAD_I 1
+	APP SUB
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 1
+	LOAD_OS
+	APP MUL
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 2
+	LOAD_OS
+	APP ADD
+	APP ADD
+	STORE_OS
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 2
+	LOAD_OS
+	LOAD_I 1
+	APP ADD
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 2
+	STORE_OS
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+
+	JUMP label22
+label23:	LOAD_R %fp
+	LOAD_O -2
+	LOAD_I 1
+	LOAD_OS
+	LOAD_I 1
+	APP ADD
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_I 1
+	STORE_OS
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+
+	JUMP label20
+label21:	LOAD_B true
+	LOAD_R %fp
+	STORE_O -4
+	LOAD_R %fp
+	LOAD_O 0
+	LOAD_R %fp
+	STORE_O -3
+	LOAD_R %fp
+	LOAD_O 3
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+	ALLOC -1
+	JUMP_S
+
+f_write_matrix2:	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 2
+	LOAD_I 4
+	LOAD_I 0
+	LOAD_R %fp
+	LOAD_I 1
+	STORE_OS
+label25:	LOAD_R %fp
+	LOAD_I 1
+	LOAD_OS
+	LOAD_R %fp
+	LOAD_O -4
+	LOAD_O 2
+	APP LT
+	JUMP_C label26
+	LOAD_R %fp
+	ALLOC 2
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 3
+	LOAD_I 0
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_I 2
+	STORE_OS
+label27:	LOAD_R %fp
+	LOAD_O -2
+	LOAD_I 2
+	LOAD_OS
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -4
+	LOAD_O 2
+	APP LT
+	JUMP_C label28
+	LOAD_R %fp
+	ALLOC 2
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -4
+	LOAD_I 3
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O -4
+	LOAD_O 1
+	LOAD_I 1
+	APP SUB
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 1
+	LOAD_OS
+	APP MUL
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 2
+	LOAD_OS
+	APP ADD
+	APP ADD
+	LOAD_OS
+	PRINT_F
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 2
+	LOAD_OS
+	LOAD_I 1
+	APP ADD
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_I 2
+	STORE_OS
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+
+	JUMP label27
+label28:	LOAD_R %fp
+	LOAD_O -2
+	LOAD_I 1
+	LOAD_OS
+	LOAD_I 1
+	APP ADD
+	LOAD_R %fp
+	LOAD_O -2
+	LOAD_I 1
+	STORE_OS
+	LOAD_R %fp
+	LOAD_O 1
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+
+	JUMP label25
+label26:	LOAD_B true
+	LOAD_R %fp
+	STORE_O -4
+	LOAD_R %fp
+	LOAD_O 0
+	LOAD_R %fp
+	STORE_O -3
+	LOAD_R %fp
+	LOAD_O 3
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+	ALLOC -1
+	JUMP_S
+
+

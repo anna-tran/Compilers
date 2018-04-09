@@ -291,7 +291,7 @@ genArraySlot level offset nDims (ai:ais) =
 
 -- assume that the index is on top of the stack        
 -- given that you're at d1, calculates d2*d3*d4...
-genDimMul level offset nDims dimNum =
+genDimMul level offset nDims dimNum 
     | dimNum <= 0 || dimNum > nDims = ""    
     | dimNum == nDims = 
         jumpToLevel level ++

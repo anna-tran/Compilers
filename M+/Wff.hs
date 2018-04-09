@@ -46,8 +46,9 @@ allWffFuncArgs :: Int -> ST -> [SYM_DESC] -> (Int,ST)
 allWffFuncArgs lNum st [] = (lNum,st)
 allWffFuncArgs lNum st (arg:args) = (lNum2,st2)
     where
-        (lNum1,st1) = insert lNum st arg
-        (lNum2,st2) = allWffFuncArgs lNum1 st1 args
+        (lNum1,st1) = allWffFuncArgs lNum st args
+        (lNum2,st2) = insert lNum1 st1 arg
+
 
 allMIntExpr :: ST -> [M_expr] -> Bool
 allMIntExpr st es = foldr (\x acc -> 

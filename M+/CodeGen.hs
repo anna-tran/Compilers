@@ -277,11 +277,9 @@ genArraySlot level offset nDims [arrIndex] =
         arrayCheck = genArrayCheck level offset nDims
 genArraySlot level offset nDims (ai:ais) =
     Just $ 
-    jumpToLevel level ++
-    "\tLOAD_O " ++ show offset ++ "\n" ++
-    "\tLOAD_O " ++ show (dimNum+1) ++ "\n" ++ -- d2
     exprCode ++
     arrayCheck ++
+    dimMulCode ++
     "\tAPP MUL\n" ++      -- (d2*r)
     fromJust (genArraySlot level offset nDims ais) ++
     "\tAPP ADD\n"         -- (d2*r) + c
@@ -289,7 +287,22 @@ genArraySlot level offset nDims (ai:ais) =
         dimNum = nDims - length ais
         exprCode = genIExpr ai
         arrayCheck = genArrayCheck level offset dimNum
+        dimMulCode = genDimMul level offset nDims (dimNum+1)        
 
+-- assume that the index is on top of the stack        
+-- given that you're at d1, calculates d2*d3*d4...
+genDimMul level offset nDims dimNum =
+    | dimNum <= 0 || dimNum > nDims = ""    
+    | dimNum == nDims = 
+        jumpToLevel level ++
+        "\tLOAD_O " ++ show offset ++ "\n" ++    
+        "\tLOAD_O " ++ show dimNum
+    | otherwise =
+        jumpToLevel level ++
+        "\tLOAD_O " ++ show offset ++ "\n" ++    
+        "\tLOAD_O " ++ show dimNum ++ "\n" ++       -- d2 on top of stack
+        genDimMul level offset nDims (dimNum+1) ++  -- d3 * d4 ... on top of stack
+        "\tAPP MUL\n"                               -- d2 * d3 * d4 ... on top of stack
 
 -- assume the array index is on top of the stack    
 genArrayCheck :: Int -> Int -> Int -> String    

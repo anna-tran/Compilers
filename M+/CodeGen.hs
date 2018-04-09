@@ -279,14 +279,12 @@ genArraySlot level offset nDims (ai:ais) =
     Just $ 
     jumpToLevel level ++
     "\tLOAD_O " ++ show offset ++ "\n" ++
-    "\tLOAD_O " ++ show dimNum ++ "\n" ++ 
-    "\tLOAD_I 1\n" ++     
-    "\tAPP SUB\n" ++      -- (d1-1)
+    "\tLOAD_O " ++ show (dimNum+1) ++ "\n" ++ -- d2
     exprCode ++
     arrayCheck ++
-    "\tAPP MUL\n" ++      -- (d1-1) * r
+    "\tAPP MUL\n" ++      -- (d2*r)
     fromJust (genArraySlot level offset nDims ais) ++
-    "\tAPP ADD\n"         -- (d1-1) * r + s
+    "\tAPP ADD\n"         -- (d2*r) + c
     where
         dimNum = nDims - length ais
         exprCode = genIExpr ai

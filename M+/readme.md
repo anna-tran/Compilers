@@ -23,8 +23,7 @@ The stages of this program are
     1. Lexing
     2. Parsing
     3. Semantic Checking
-Failure in one stage results in the program exiting and not moving forward with
-the next stages.
+Failure in one stage results in the program exiting and not moving forward with the next stages.
 
 ## Assumptions
 * Allow arrays to be accessed by any index at compile time because some array dimension sizes may not be known until runtime.

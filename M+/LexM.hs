@@ -247,6 +247,185 @@ alex_action_5 =  tok (\p s -> PT p (eitherResIdent (T_TokenReal . share) s))
 alex_action_6 =  tok (\p s -> PT p (eitherResIdent (T_TokenInt . share) s)) 
 alex_action_7 =  tok (\p s -> PT p (eitherResIdent (TV . share) s)) 
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- -----------------------------------------------------------------------------
 -- ALEX TEMPLATE
 --
@@ -262,16 +441,6 @@ alex_action_7 =  tok (\p s -> PT p (eitherResIdent (TV . share) s))
 
 
 
-
-
-
-
-
-
-
-
-
-
 -- Do not remove this comment. Required to fix CPP parsing when using GCC and a clang-compiled alex.
 #if __GLASGOW_HASKELL__ > 706
 #define GTE(n,m) (tagToEnum# (n >=# m))
@@ -280,22 +449,6 @@ alex_action_7 =  tok (\p s -> PT p (eitherResIdent (TV . share) s))
 #define GTE(n,m) (n >=# m)
 #define EQ(n,m) (n ==# m)
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -434,17 +587,6 @@ alex_scan_tkn user__ orig_input len input__ s last_acc =
         check_accs (AlexAccSkip) = AlexLastSkip  input__ (I# (len))
 
 
-
-
-
-
-
-
-
-
-
-
-
 data AlexLastAcc
   = AlexNone
   | AlexLastAcc !Int !AlexInput !Int
@@ -454,32 +596,4 @@ data AlexAcc user
   = AlexAccNone
   | AlexAcc Int
   | AlexAccSkip
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

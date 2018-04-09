@@ -3,23 +3,10 @@
 	STORE_R %fp
 	ALLOC 1
 	LOAD_I 2
-	READ_I
-	LOAD_R %fp
-	LOAD_I 1
-	STORE_OS
-	LOAD_R %fp
-	ALLOC 2
-	LOAD_R %sp
-	STORE_R %fp
-	ALLOC 1
-	LOAD_I 4
 	LOAD_R %sp
 	LOAD_R %fp
 	STORE_O 1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 1
-	LOAD_OS
+	LOAD_I 2
 	LOAD_R %fp
 	LOAD_O 1
 	LOAD_O 1
@@ -33,36 +20,11 @@
 	LOAD_R %fp
 	STORE_O 2
 	ALLOC_S
-	LOAD_I 0
-	LOAD_R %fp
-	LOAD_O -2
 	LOAD_I 1
-	STORE_OS
-label0:	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 1
-	LOAD_OS
 	LOAD_R %fp
-	LOAD_O 1
-	LOAD_O 1
-	APP LT
-	JUMP_C label1
-	LOAD_R %fp
-	ALLOC 2
-	LOAD_R %sp
-	STORE_R %fp
-	ALLOC 0
-	LOAD_I 3
-	READ_I
-	LOAD_R %fp
-	LOAD_O -2
 	LOAD_O 1
 	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 1
-	LOAD_OS
+	LOAD_I 0
 	LOAD_R %sp
 	LOAD_O 0
 	LOAD_I 0
@@ -70,7 +32,6 @@ label0:	LOAD_R %fp
 	LOAD_R %sp
 	LOAD_O -1
 	LOAD_R %fp
-	LOAD_O -2
 	LOAD_O 1
 	LOAD_O 1
 	APP LT
@@ -78,134 +39,31 @@ label0:	LOAD_R %fp
 	JUMP_C end
 	APP ADD
 	STORE_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
 	LOAD_I 1
-	LOAD_OS
-	LOAD_I 1
-	APP ADD
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 1
-	STORE_OS
 	LOAD_R %fp
 	LOAD_O 1
-	APP NEG
-	ALLOC_S
-	STORE_R %fp
-
-	JUMP label0
-label1:	LOAD_R %fp
+	LOAD_I 2
 	LOAD_I 1
-	LOAD_OS
+	LOAD_R %sp
+	LOAD_O 0
 	LOAD_I 0
+	APP GE
+	LOAD_R %sp
+	LOAD_O -1
 	LOAD_R %fp
 	LOAD_O 1
 	LOAD_O 1
-	LOAD_I 1
-	APP SUB
+	APP LT
+	APP AND
+	JUMP_C end
+	APP ADD
+	STORE_OS
 	ALLOC 1
 	LOAD_R %fp
-	LOAD_O -2
 	LOAD_R %fp
 	LOAD_R %cp
-	JUMP f_sort0
-	JUMP_C label2
-	LOAD_R %fp
-	ALLOC 2
-	LOAD_R %sp
-	STORE_R %fp
-	ALLOC 0
-	LOAD_I 3
-	LOAD_I 0
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 1
-	STORE_OS
-label4:	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 1
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O 1
-	LOAD_O 1
-	APP LT
-	JUMP_C label5
-	LOAD_R %fp
-	ALLOC 2
-	LOAD_R %sp
-	STORE_R %fp
-	ALLOC 0
-	LOAD_I 3
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O 1
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 1
-	LOAD_OS
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O 1
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	LOAD_OS
-	PRINT_I
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 1
-	LOAD_OS
-	LOAD_I 1
-	APP ADD
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 1
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O 1
-	APP NEG
-	ALLOC_S
-	STORE_R %fp
-
-	JUMP label4
-label5:	LOAD_R %fp
-	LOAD_O 1
-	APP NEG
-	ALLOC_S
-	STORE_R %fp
-
-	JUMP label3
-label2:	LOAD_I 0
-	PRINT_I
-label3:	LOAD_R %fp
-	LOAD_O 2
-	APP NEG
-	ALLOC_S
-	STORE_R %fp
-
+	JUMP f_b0
+	PRINT_B
 	LOAD_R %fp
 	LOAD_O 2
 	APP NEG
@@ -213,999 +71,115 @@ label3:	LOAD_R %fp
 	STORE_R %fp
 end:	HALT
 
-f_merge0:	LOAD_R %sp
-	STORE_R %fp
-	ALLOC 0
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_I -6
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_I -4
-	LOAD_OS
-	APP LT
-	JUMP_C label7
-	LOAD_R %fp
-	ALLOC 2
-	LOAD_R %sp
-	STORE_R %fp
-	ALLOC 4
-	LOAD_I 7
-	LOAD_R %sp
-	LOAD_R %fp
-	STORE_O 1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -4
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -6
-	LOAD_OS
-	APP SUB
-	LOAD_I 1
-	APP ADD
-	LOAD_R %fp
-	LOAD_O 1
-	LOAD_O 1
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_R %fp
-	LOAD_O 5
-	LOAD_I 1
-	APP ADD
-	APP ADD
-	LOAD_R %fp
-	STORE_O 5
-	ALLOC_S
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -6
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_I 2
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -5
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_I 3
-	STORE_OS
-	LOAD_I 0
-	LOAD_R %fp
-	LOAD_I 4
-	STORE_OS
-label9:	LOAD_R %fp
-	LOAD_I 2
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -5
-	LOAD_OS
-	APP LT
-	LOAD_R %fp
-	LOAD_I 3
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -4
-	LOAD_OS
-	APP LE
-	APP AND
-	JUMP_C label10
-	LOAD_R %fp
-	ALLOC 2
-	LOAD_R %sp
-	STORE_R %fp
-	ALLOC 0
-	LOAD_I 3
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -7
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 2
-	LOAD_OS
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -7
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -7
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 3
-	LOAD_OS
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -7
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	LOAD_OS
-	APP LT
-	JUMP_C label11
-	LOAD_R %fp
-	ALLOC 2
-	LOAD_R %sp
-	STORE_R %fp
-	ALLOC 0
-	LOAD_I 3
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -7
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 2
-	LOAD_OS
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -7
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O 1
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 4
-	LOAD_OS
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O 1
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 2
-	LOAD_OS
-	LOAD_I 1
-	APP ADD
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 2
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 4
-	LOAD_OS
-	LOAD_I 1
-	APP ADD
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 4
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O 1
-	APP NEG
-	ALLOC_S
-	STORE_R %fp
-
-	JUMP label12
-label11:	LOAD_R %fp
-	ALLOC 2
-	LOAD_R %sp
-	STORE_R %fp
-	ALLOC 0
-	LOAD_I 3
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -7
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 3
-	LOAD_OS
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -7
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O 1
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 4
-	LOAD_OS
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O 1
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 3
-	LOAD_OS
-	LOAD_I 1
-	APP ADD
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 3
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 4
-	LOAD_OS
-	LOAD_I 1
-	APP ADD
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 4
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O 1
-	APP NEG
-	ALLOC_S
-	STORE_R %fp
-
-label12:	LOAD_R %fp
-	LOAD_O 1
-	APP NEG
-	ALLOC_S
-	STORE_R %fp
-
-	JUMP label9
-label10:label13:	LOAD_R %fp
-	LOAD_I 2
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -5
-	LOAD_OS
-	APP LT
-	JUMP_C label14
-	LOAD_R %fp
-	ALLOC 2
-	LOAD_R %sp
-	STORE_R %fp
-	ALLOC 0
-	LOAD_I 3
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -7
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 2
-	LOAD_OS
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -7
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O 1
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 4
-	LOAD_OS
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O 1
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 4
-	LOAD_OS
-	LOAD_I 1
-	APP ADD
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 4
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 2
-	LOAD_OS
-	LOAD_I 1
-	APP ADD
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 2
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O 1
-	APP NEG
-	ALLOC_S
-	STORE_R %fp
-
-	JUMP label13
-label14:label15:	LOAD_R %fp
-	LOAD_I 3
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -4
-	LOAD_OS
-	APP LE
-	JUMP_C label16
-	LOAD_R %fp
-	ALLOC 2
-	LOAD_R %sp
-	STORE_R %fp
-	ALLOC 0
-	LOAD_I 3
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -7
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 3
-	LOAD_OS
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -7
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O 1
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 4
-	LOAD_OS
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O 1
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 4
-	LOAD_OS
-	LOAD_I 1
-	APP ADD
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 4
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 3
-	LOAD_OS
-	LOAD_I 1
-	APP ADD
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 3
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O 1
-	APP NEG
-	ALLOC_S
-	STORE_R %fp
-
-	JUMP label15
-label16:	LOAD_I 0
-	LOAD_R %fp
-	LOAD_I 4
-	STORE_OS
-label17:	LOAD_R %fp
-	LOAD_I 4
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -6
-	LOAD_OS
-	APP ADD
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -4
-	LOAD_OS
-	APP LE
-	JUMP_C label18
-	LOAD_R %fp
-	ALLOC 2
-	LOAD_R %sp
-	STORE_R %fp
-	ALLOC 0
-	LOAD_I 3
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O 1
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 4
-	LOAD_OS
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O 1
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -7
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I -6
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 4
-	LOAD_OS
-	APP ADD
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -7
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 4
-	LOAD_OS
-	LOAD_I 1
-	APP ADD
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 4
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O 1
-	APP NEG
-	ALLOC_S
-	STORE_R %fp
-
-	JUMP label17
-label18:	LOAD_R %fp
-	LOAD_O 5
-	APP NEG
-	ALLOC_S
-	STORE_R %fp
-
-	JUMP label8
-label7:	LOAD_R %fp
-	ALLOC 2
-	LOAD_R %sp
-	STORE_R %fp
-	ALLOC 0
-	LOAD_I 3
-	LOAD_R %fp
-	LOAD_O 1
-	APP NEG
-	ALLOC_S
-	STORE_R %fp
-
-label8:	LOAD_B true
-	LOAD_R %fp
-	STORE_O -7
-	LOAD_R %fp
-	LOAD_O 0
-	LOAD_R %fp
-	STORE_O -6
-	LOAD_R %fp
-	LOAD_O 1
-	APP NEG
-	ALLOC_S
-	STORE_R %fp
-	ALLOC -4
-	JUMP_S
-
-f_sort0:	LOAD_R %sp
+f_b0:	LOAD_R %sp
 	STORE_R %fp
 	ALLOC 1
 	LOAD_I 3
 	LOAD_R %fp
-	LOAD_I -4
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_I -5
-	LOAD_OS
-	APP SUB
-	LOAD_I 0
-	APP LT
-	JUMP_C label20
+	ALLOC 2
+	LOAD_R %sp
+	STORE_R %fp
+	ALLOC 0
+	LOAD_I 3
 	LOAD_B false
 	LOAD_R %fp
+	LOAD_O -2
 	LOAD_I 1
 	STORE_OS
-	JUMP label21
-label20:	LOAD_R %fp
-	LOAD_I -5
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_I -4
-	LOAD_OS
-	APP EQ
-	JUMP_C label22
-	LOAD_B true
-	LOAD_R %fp
-	LOAD_I 1
-	STORE_OS
-	JUMP label23
-label22:	LOAD_R %fp
-	LOAD_I -4
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_I -5
-	LOAD_OS
-	APP SUB
-	LOAD_I 1
-	APP EQ
-	JUMP_C label24
-	LOAD_R %fp
-	ALLOC 2
-	LOAD_R %sp
-	STORE_R %fp
 	ALLOC 1
-	LOAD_I 4
 	LOAD_R %fp
 	LOAD_O -2
-	LOAD_O -6
-	LOAD_I 2
+	LOAD_R %fp
+	LOAD_R %cp
+	JUMP f_c1
 	LOAD_R %fp
 	LOAD_O -2
-	LOAD_I -5
-	LOAD_OS
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
+	LOAD_I 1
+	STORE_OS
 	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -6
 	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
+	APP NEG
+	ALLOC_S
+	STORE_R %fp
+
+	LOAD_R %fp
+	LOAD_I 1
 	LOAD_OS
 	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -6
-	LOAD_I 2
+	STORE_O -3
 	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -4
-	LOAD_OS
-	LOAD_R %sp
 	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
 	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -6
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	LOAD_OS
-	APP GT
-	JUMP_C label26
+	STORE_O -2
 	LOAD_R %fp
-	ALLOC 2
-	LOAD_R %sp
+	LOAD_O 2
+	APP NEG
+	ALLOC_S
 	STORE_R %fp
 	ALLOC 0
-	LOAD_I 3
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -6
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I -5
-	LOAD_OS
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -6
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 1
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -6
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I -4
-	LOAD_OS
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -6
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -6
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I -5
-	LOAD_OS
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -6
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 1
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -6
-	LOAD_I 2
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I -4
-	LOAD_OS
-	LOAD_R %sp
-	LOAD_O 0
-	LOAD_I 0
-	APP GE
-	LOAD_R %sp
-	LOAD_O -1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_O -6
-	LOAD_O 1
-	APP LT
-	APP AND
-	JUMP_C end
-	APP ADD
-	STORE_OS
-	LOAD_B true
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_I 1
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O 1
-	APP NEG
-	ALLOC_S
-	STORE_R %fp
+	JUMP_S
 
-	JUMP label27
-label26:	LOAD_B true
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 1
-	STORE_OS
-label27:	LOAD_R %fp
-	LOAD_O 2
-	APP NEG
-	ALLOC_S
+f_c1:	LOAD_R %sp
 	STORE_R %fp
-
-	JUMP label25
-label24:	LOAD_R %fp
-	ALLOC 2
-	LOAD_R %sp
-	STORE_R %fp
-	ALLOC 1
-	LOAD_I 4
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -5
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -4
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -5
-	LOAD_OS
-	APP SUB
+	ALLOC 0
 	LOAD_I 2
-	APP DIV
-	APP ADD
 	LOAD_R %fp
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O 1
+	LOAD_I 2
 	LOAD_I 1
-	STORE_OS
-	LOAD_R %fp
-	LOAD_I 1
-	LOAD_OS
-	PRINT_I
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -6
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -5
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_I 1
-	LOAD_OS
-	ALLOC 1
+	LOAD_R %sp
+	LOAD_O 0
+	LOAD_I 0
+	APP GE
+	LOAD_R %sp
+	LOAD_O -1
 	LOAD_R %fp
 	LOAD_O -2
 	LOAD_O -2
-	LOAD_R %fp
-	LOAD_R %cp
-	JUMP f_sort0
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -6
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_I 1
-	LOAD_OS
-	LOAD_I 1
-	APP ADD
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -4
-	LOAD_OS
-	ALLOC 1
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_O -2
-	LOAD_R %fp
-	LOAD_R %cp
-	JUMP f_sort0
+	LOAD_O 1
+	LOAD_O 1
+	APP LT
 	APP AND
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -6
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -5
-	LOAD_OS
-	LOAD_R %fp
-	LOAD_I 1
-	LOAD_OS
-	LOAD_I 1
+	JUMP_C end
 	APP ADD
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I -4
 	LOAD_OS
-	ALLOC 1
 	LOAD_R %fp
 	LOAD_O -2
 	LOAD_O -2
+	LOAD_O 1
+	LOAD_I 2
+	LOAD_I 0
+	LOAD_R %sp
+	LOAD_O 0
+	LOAD_I 0
+	APP GE
+	LOAD_R %sp
+	LOAD_O -1
 	LOAD_R %fp
-	LOAD_R %cp
-	JUMP f_merge0
+	LOAD_O -2
+	LOAD_O -2
+	LOAD_O 1
+	LOAD_O 1
+	APP LT
 	APP AND
-	LOAD_R %fp
-	LOAD_O -2
-	LOAD_I 1
-	STORE_OS
-	LOAD_R %fp
-	LOAD_O 2
-	APP NEG
-	ALLOC_S
-	STORE_R %fp
-
-label25:label23:label21:	LOAD_R %fp
-	LOAD_I 1
+	JUMP_C end
+	APP ADD
 	LOAD_OS
+	APP EQ
 	LOAD_R %fp
-	STORE_O -6
+	STORE_O -3
 	LOAD_R %fp
 	LOAD_O 0
 	LOAD_R %fp
-	STORE_O -5
+	STORE_O -2
 	LOAD_R %fp
-	LOAD_O 2
+	LOAD_O 1
 	APP NEG
 	ALLOC_S
 	STORE_R %fp
-	ALLOC -3
+	ALLOC 0
 	JUMP_S
 
 

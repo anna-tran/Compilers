@@ -82,6 +82,7 @@ stepIntoFunc :: Int -> ST -> M_decl -> SF (Int,ST,[I_fbody])
 stepIntoFunc lNum st (M_var _) = SS (lNum,st,[])
 stepIntoFunc lNum st (M_fun (id,args,retType,decls,stmts)) = sf    
     where
+        (I_FUNCTION(_,label,_,_)) = fromJust $ lookUp st id
         -- create new temp scope
         st0 = newScope (L_FUN retType) st
         --
@@ -107,11 +108,10 @@ stepIntoFunc lNum st (M_fun (id,args,retType,decls,stmts)) = sf
         --                
         sf = if (isSS sf1) && (isSS sf2) && (isSS sf3)
                 then let
-                    nArg = length argTypes
+                    nArg = length args
                     (_,_,nVar,iArrDims) = fromSS sf1
                     (_,st',iFbodies) = fromSS sf2
                     (lNum',iStmts) = fromSS sf3
-                    (I_FUNCTION(_,label,argTypes,_)) = fromJust $ lookUp st' id
                     -- delete temp scope
                     st'' = delete st'
                     in SS (lNum',st'',[IFUN (label,iFbodies,nVar,nArg,iArrDims,iStmts) ])

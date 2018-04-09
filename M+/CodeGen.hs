@@ -35,6 +35,7 @@ genIProg (IPROG (fbodies,nVar,arrDims,stmts)) =
     "\tAPP NEG\n" ++
     "\tALLOC_S\n" ++    
     "\tSTORE_R %fp\n" ++                      -- restore the caller frame pointer    
+    "end:" ++
     "\tHALT\n\n" ++
     funCode
     where
@@ -268,7 +269,12 @@ genArrayAccess level offset arrIndices =
 genArraySlot :: Int -> Int -> Int -> [I_expr] -> Maybe String
 genArraySlot level offset nDims [] = Nothing
 genArraySlot level offset nDims [arrIndex] = 
-    Just $ genIExpr arrIndex -- puts the location of the slot onto the stack
+    Just $ 
+        exprCode ++        -- puts the location of the slot onto the stack
+        arrayCheck
+    where
+        exprCode = genIExpr arrIndex
+        arrayCheck = genArrayCheck level offset nDims
 genArraySlot level offset nDims (ai:ais) =
     Just $ 
     jumpToLevel level ++
@@ -301,7 +307,7 @@ genArrayCheck level offset dimNum =
     "\tLOAD_O " ++ show dimNum ++ "\n" ++   -- dimension value is on the stack
     "\tAPP LT\n" ++                         -- if index < dimension
     "\tAPP AND\n" ++                        -- if index is within bounds
-    "\tJUMP_C end\n" ++                     -- if not within bounds, jump to end and halt program
+    "\tJUMP_C end\n"                        -- if not within bounds, jump to end and halt program
 
 
 -- push value on top of the stack

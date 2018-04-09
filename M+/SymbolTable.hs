@@ -60,10 +60,12 @@ insert n ((Symbol_table(sc,nL,nA,sL)):rest) (VARIABLE (str,t,dim))
       
 insert n ((Symbol_table(sc,nL,nA,sL)):rest) (FUNCTION (str,ts,t))
        | in_index_list str sL = error ("Symbol table error: "++str++" is already defined.")
-       | otherwise = (n+1,(Symbol_table(sc,nL,nA,(str,Fun_attr(getlabel n str,ts,t)):sL)):rest)    
+       | otherwise = (n+1,(Symbol_table(sc,nL,nA,(str,Fun_attr(getlabel level str,ts,t)):sL)):rest)    
+        where
+            level = length rest
 
 getlabel :: Int -> String -> String
-getlabel n str = "f_" ++ str ++ (show n)
+getlabel level str = "f_" ++ str ++ (show level)
 
 in_index_list :: String -> [(String, SYM_VALUE)] -> Bool
 in_index_list str [] = False

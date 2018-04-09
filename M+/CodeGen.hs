@@ -273,14 +273,35 @@ genArraySlot level offset nDims (ai:ais) =
     Just $ 
     jumpToLevel level ++
     "\tLOAD_O " ++ show offset ++ "\n" ++
-    "\tLOAD_O " ++ show (nDims - length ais) ++ "\n" ++ 
+    "\tLOAD_O " ++ show dimNum ++ "\n" ++ 
     "\tLOAD_I 1\n" ++     
     "\tAPP SUB\n" ++      -- (d1-1)
-    (genIExpr ai) ++
+    exprCode ++
+    arrayCheck ++
     "\tAPP MUL\n" ++      -- (d1-1) * r
     fromJust (genArraySlot level offset nDims ais) ++
     "\tAPP ADD\n"         -- (d1-1) * r + s
+    where
+        dimNum = nDims - length ais
+        exprCode = genIExpr ai
+        arrayCheck = genArrayCheck level offset dimNum
 
+
+-- assume the array index is on top of the stack    
+genArrayCheck :: Int -> Int -> Int -> String    
+genArrayCheck level offset dimNum =
+    "\tLOAD_R %sp\n" ++
+    "\tLOAD_O 0\n" ++                       -- duplicate copy of array index to check lower bound
+    "\tLOAD_I 0\n" ++
+    "\tAPP GE\n" ++                         -- if index >= 0
+    "\tLOAD_R %sp\n" ++                     -- duplicate copy of array index to check higher bound
+    "\tLOAD_O -1\n" ++
+    jumpToLevel level ++
+    "\tLOAD_O " ++ show offset ++ "\n" ++
+    "\tLOAD_O " ++ show dimNum ++ "\n" ++   -- dimension value is on the stack
+    "\tAPP LT\n" ++                         -- if index < dimension
+    "\tAPP AND\n" ++                        -- if index is within bounds
+    "\tJUMP_C end\n" ++                     -- if not within bounds, jump to end and halt program
 
 
 -- push value on top of the stack

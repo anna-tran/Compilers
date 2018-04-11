@@ -27,8 +27,8 @@ The stages of this program are
     3. Semantic Analysis
     4. Code Generation
 Failure in one stage results in the program exiting and not moving forward with the next stages.
-If any array indices are out of bounds, the program simply exits once it
-reaches the line with out of bound indices.
+If any array indices are out of bounds, the program prints out an "Out of
+bounds" error message and exits once it reaches the line with out of bound indices.
 
 ## Assumptions
 * Allow arrays to be accessed by any index at compile time because some array dimension sizes may not be known until runtime.

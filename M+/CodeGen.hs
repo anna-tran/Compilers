@@ -35,6 +35,9 @@ genIProg (IPROG (fbodies,nVar,arrDims,stmts)) =
     "\tAPP NEG\n" ++
     "\tALLOC_S\n" ++    
     "\tSTORE_R %fp\n" ++                      -- restore the caller frame pointer    
+    "\tJUMP end\n" ++
+    "error:" ++
+    arrayIndexError ++                        -- print error message if accessing array out of bounds
     "end:" ++
     "\tHALT\n\n" ++
     funCode
@@ -42,6 +45,7 @@ genIProg (IPROG (fbodies,nVar,arrDims,stmts)) =
         arrayCode = (foldl (\acc arrDim -> acc ++ (genArray nVar arrDim)) "" arrDims)
         (lNum,stmtCode) = foldWithLabel 0 genIStmt stmts
         (lNum',funCode) = foldWithLabel lNum genIFbody fbodies
+        arrayIndexError = genArrayIndexError
 
         
 
@@ -99,6 +103,14 @@ genArrayStorage nDims offset =
     "\tLOAD_O " ++ show nDims ++ "\n" ++
     "\tAPP MUL\n"
 
+genArrayIndexError :: String
+genArrayIndexError = errorMsg
+    where
+        reversedMsg = reverse "ERROR: Index out of bounds!"
+        loadChars = foldl (\acc c -> acc ++ "\tLOAD_C \""++ c ++ "\"\n") "" (map (:[]) reversedMsg)
+--        loadChars = stringFold reversedMsg
+        printChars = foldl1 (++) (replicate (length reversedMsg) "\tPRINT_C\n")
+        errorMsg = loadChars ++ printChars 
 
 
 genIFbody :: Int -> I_fbody -> (Int,String)
@@ -232,8 +244,7 @@ genIStmt lNum (IBLOCK (fbodies,nVar,arrDims,stmts)) = (lNum2,
     "\tLOAD_O " ++ show (nVar+1) ++ "\n" ++
     "\tAPP NEG\n" ++
     "\tALLOC_S\n" ++                          -- now old frame pointer on top of stack
-
-    "\tSTORE_R %fp\n\n" ++                    -- restore the caller frame pointer
+    "\tSTORE_R %fp\n" ++                    -- restore the caller frame pointer
     
     funCode 
     )
@@ -296,7 +307,7 @@ genDimMul level offset nDims dimNum
     | dimNum == nDims = 
         jumpToLevel level ++
         "\tLOAD_O " ++ show offset ++ "\n" ++    
-        "\tLOAD_O " ++ show dimNum
+        "\tLOAD_O " ++ show dimNum ++ "\n"
     | otherwise =
         jumpToLevel level ++
         "\tLOAD_O " ++ show offset ++ "\n" ++    
@@ -318,7 +329,7 @@ genArrayCheck level offset dimNum =
     "\tLOAD_O " ++ show dimNum ++ "\n" ++   -- dimension value is on the stack
     "\tAPP LT\n" ++                         -- if index < dimension
     "\tAPP AND\n" ++                        -- if index is within bounds
-    "\tJUMP_C end\n"                        -- if not within bounds, jump to end and halt program
+    "\tJUMP_C error\n"                        -- if not within bounds, jump to end and halt program
 
 
 -- push value on top of the stack
